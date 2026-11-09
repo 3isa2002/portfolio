@@ -13,7 +13,8 @@ const NetworkScene = dynamic(() => import("./NetworkScene"), { ssr: false });
  * Background layer, mounted once in the root layout behind everything.
  *
  * The static gradient + noise is always there: it is the first paint, the reduced-motion
- * version, and the fallback for devices without WebGL or that cannot hold 45 fps. The 3D scene
+ * version, and the fallback for devices without WebGL (or whose context keeps getting lost). A
+ * device that cannot hold 45 fps gets a lighter scene, never the static one. The 3D scene
  * is decided on the first interaction (or after a few seconds), loaded when the browser is idle,
  * and fades in over the static layer once its first frame is drawn.
  */
@@ -22,6 +23,8 @@ export function BackgroundLayer() {
   const [level, setLevel] = useState<BackgroundLevel | null>(null);
   const [interactive, setInteractive] = useState(false);
   const [shown, setShown] = useState(false);
+  /** Bumped to rebuild the canvas after a lost WebGL context (twice at most, then static). */
+  const [generation, setGeneration] = useState(0);
 
   useEffect(() => {
     if (reduced) return;
@@ -53,10 +56,16 @@ export function BackgroundLayer() {
       {sceneLevel && (
         <div className="bg-canvas" data-on={shown || undefined} data-level={sceneLevel}>
           <NetworkScene
+            key={generation}
             level={sceneLevel}
             interactive={interactive}
             onReady={() => setShown(true)}
             onDecline={() => setLevel(stepDown)}
+            onLost={() => {
+              setShown(false);
+              if (generation >= 2) setLevel("off");
+              else setGeneration((g) => g + 1);
+            }}
           />
         </div>
       )}

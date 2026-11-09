@@ -38,8 +38,10 @@ const subscribeSound = (cb: () => void) => {
 export function NavbarActions({ data }: { data: PaletteData }) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  // Shown as on only when sound is enabled *and* the browser lets the page play it.
+  // Playing: enabled *and* allowed by the browser. Enabled alone (before the visitor's first
+  // click, tap or key) still shows as on, dimmed: the setting is on, the browser is waiting.
   const sound = useSyncExternalStore(subscribeSound, soundActive, () => false);
+  const enabled = useSyncExternalStore(subscribeSound, soundEnabled, () => true);
   const shortcut = useShortcutLabel();
   // Where focus was when the palette opened: it goes back there on close (the dialog has no
   // Radix trigger to return to, since it opens from a shortcut or from several buttons).
@@ -119,12 +121,14 @@ export function NavbarActions({ data }: { data: PaletteData }) {
           if (soundEnabled() && !sound) return unlockAudio();
           setSound(!sound);
         }}
-        aria-pressed={sound}
+        aria-pressed={enabled}
         aria-label={t.sound.label}
         className="nav-tool"
       >
         {sound ? (
           <Volume2 size={16} aria-hidden />
+        ) : enabled ? (
+          <Volume2 size={16} aria-hidden className="opacity-60" />
         ) : (
           <VolumeX size={16} aria-hidden className="opacity-60" />
         )}

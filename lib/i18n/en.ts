@@ -190,7 +190,10 @@ export const en = {
     ],
     ok: "OK",
     skip: "Skip intro",
-    soundHint: "Click anywhere for sound",
+    gateLabel: "system ready",
+    enter: "Enter",
+    enterNote: "sound on",
+    enterSilent: "Enter without sound",
   },
   notFound: {
     title: "Signal lost",

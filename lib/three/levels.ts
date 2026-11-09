@@ -1,8 +1,10 @@
 /**
  * Quality levels for the background scene (SPEC §7, §8).
  * Phones start at `lite` (400 points, no bloom); desktops at `full` (1,500 points + bloom).
- * When drei's PerformanceMonitor sees under 45 fps for 2 s the scene steps down:
- * full → reduced → static fallback; lite → static fallback.
+ * When drei's PerformanceMonitor sees a sustained drop the scene steps down: full → reduced → lite.
+ * A slow frame rate never removes the scene (it is the site's signature, and a slow patch, e.g.
+ * while the boot intro plays on an integrated GPU, used to leave the page static for the whole
+ * visit). Only `pickLevel` (no WebGL, save-data, very low-end) or a lost WebGL context turn it off.
  */
 export type SceneLevel = "full" | "reduced" | "lite";
 export type BackgroundLevel = SceneLevel | "off";
@@ -11,11 +13,13 @@ export const LEVELS: Record<SceneLevel, { count: number; bloom: boolean; dpr: [n
   {
     full: { count: 1500, bloom: true, dpr: [1, 1.75] },
     reduced: { count: 750, bloom: false, dpr: [1, 1.5] },
-    lite: { count: 400, bloom: false, dpr: [1, 1.5] },
+    lite: { count: 400, bloom: false, dpr: [1, 1.25] },
   };
 
 export function stepDown(level: BackgroundLevel | null): BackgroundLevel {
-  return level === "full" ? "reduced" : "off";
+  if (level === "full") return "reduced";
+  if (level === "reduced" || level === "lite") return "lite";
+  return "off";
 }
 
 /** Same values as styles/tokens.css (--bg, --cyan, --violet). */
