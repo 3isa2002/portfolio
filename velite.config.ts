@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import rehypeShiki from "@shikijs/rehype";
+import sharp from "sharp";
+import type { ShikiTransformer } from "shiki";
 import { defineCollection, defineConfig, s } from "velite";
 import { CATEGORIES, STATUSES } from "./lib/categories";
 
@@ -62,18 +64,42 @@ const projects = defineCollection({
         }
       }
     })
-    .transform((data) => {
+    .transform(async (data) => {
       const media = (file: string) =>
         !file || /^https?:\/\//.test(file) ? file : `/projects/${data.slug}/${file}`;
+      // Gallery images keep their real proportions in the masonry, so their sizes are read at
+      // build time: width/height on every <img> means no layout shift while they load.
+      const gallery = await Promise.all(
+        data.gallery.map(async (g) => {
+          const local = !/^https?:\/\//.test(g.src);
+          const meta = local
+            ? await sharp(join("public", "projects", data.slug, g.src)).metadata()
+            : { width: 1600, height: 1000 };
+          return {
+            ...g,
+            src: media(g.src),
+            width: meta.width ?? 1600,
+            height: meta.height ?? 1000,
+          };
+        }),
+      );
       return {
         ...data,
         url: `/projects/${data.slug}`,
         coverSrc: media(data.cover),
         previewSrc: media(data.preview),
-        gallery: data.gallery.map((g) => ({ ...g, src: media(g.src) })),
+        gallery,
       };
     }),
 });
+
+/** Copies the fence's `title="…"` onto <pre data-title>, read by the MDX CodeBlock tab. */
+const fileTitle: ShikiTransformer = {
+  pre(node) {
+    const title: unknown = this.options.meta?.title;
+    if (typeof title === "string") node.properties["data-title"] = title;
+  },
+};
 
 export default defineConfig({
   // Run as `velite build --strict` (see package.json) so any schema error fails the build (SPEC §6).
@@ -87,12 +113,21 @@ export default defineConfig({
   },
   collections: { projects },
   mdx: {
+    // Media live in public/projects/<slug>/ and the case-study page resolves them; Velite must
+    // not try to copy relative paths it sees in MDX (e.g. <Video src="demo.webm" />).
+    copyLinkedFiles: false,
     rehypePlugins: [
       [
         rehypeShiki,
         {
           theme: "github-dark-default",
           // Build-time highlighting only: zero runtime JS (SPEC §2).
+          // ```python title="retrieve.py" → the file name tab of the code block.
+          parseMetaString: (meta: string) => {
+            const title = /title="([^"]+)"/.exec(meta)?.[1];
+            return title ? { title } : {};
+          },
+          transformers: [fileTitle],
         },
       ],
     ],

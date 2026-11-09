@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { BackTransitions } from "@/components/motion/BackTransitions";
 import { MotionRoot } from "@/components/motion/MotionRoot";
 import { BackgroundLayer } from "@/components/three/BackgroundLayer";
 import { site } from "@/content/site";
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <Footer />
         <MotionRoot />
+        <BackTransitions />
       </body>
     </html>
   );

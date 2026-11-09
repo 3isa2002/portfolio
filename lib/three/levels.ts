@@ -36,7 +36,8 @@ export function pickLevel(finePointer: boolean): BackgroundLevel {
   return finePointer && window.innerWidth >= 768 ? "full" : "lite";
 }
 
-function hasWebGL(): boolean {
+/** Creates a throwaway WebGL context and releases it at once. Costly on weak GPUs: call lazily. */
+export function hasWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");

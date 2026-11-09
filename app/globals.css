@@ -221,6 +221,114 @@ html[data-intro="calm"] #hero {
   }
 }
 
+/*
+ * Project card hover (SPEC §6): tilt (set by ProjectCard as --rx/--ry), a sheen following the
+ * cursor (--mx/--my), a border glow in the category colour (--glow), the preview video fading
+ * in over the cover. Only transform and opacity animate; the glow and sheen are opacity layers.
+ */
+.project-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 450ms var(--ease-out-expo);
+  will-change: transform;
+}
+.project-card:hover {
+  transition-duration: 120ms;
+}
+.project-card::before,
+.project-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out-expo);
+}
+.project-card::before {
+  background: radial-gradient(
+    420px circle at var(--mx) var(--my),
+    rgb(255 255 255 / 0.09),
+    transparent 45%
+  );
+}
+.project-card::after {
+  border: 1px solid color-mix(in srgb, var(--glow) 55%, transparent);
+  box-shadow:
+    0 0 24px -6px color-mix(in srgb, var(--glow) 45%, transparent),
+    inset 0 0 24px -12px color-mix(in srgb, var(--glow) 40%, transparent);
+}
+.project-card:hover::before,
+.project-card:hover::after,
+.project-card:has(a:focus-visible)::after {
+  opacity: 1;
+}
+.card-preview {
+  opacity: 0;
+  transition: opacity 400ms var(--ease-out-expo);
+}
+.project-card[data-previewing] .card-preview {
+  opacity: 1;
+}
+
+/*
+ * View transitions (React <ViewTransition>, SPEC §6): the clicked card's cover morphs into the
+ * case-study hero; the browser's back button reverses it. Case-study content rises in after it.
+ */
+::view-transition-group(.morph) {
+  animation-duration: 550ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+@keyframes via-blur {
+  30% {
+    filter: blur(2px);
+  }
+}
+::view-transition-new(.cs-rise),
+::view-transition-new(.cs-rise-late) {
+  animation:
+    260ms ease-out both vt-fade,
+    520ms var(--ease-out-expo) both vt-rise;
+}
+::view-transition-new(.cs-rise) {
+  animation-delay: 180ms;
+}
+::view-transition-new(.cs-rise-late) {
+  animation-delay: 300ms;
+}
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise {
+  from {
+    transform: translateY(16px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Crossfade only: nothing travels, nothing rises. */
+  ::view-transition-group(*) {
+    animation-name: none !important;
+  }
+  ::view-transition-new(*),
+  ::view-transition-old(*) {
+    animation-duration: 200ms !important;
+    animation-delay: 0s !important;
+  }
+  ::view-transition-new(.cs-rise),
+  ::view-transition-new(.cs-rise-late) {
+    animation: 200ms ease-out both vt-fade !important;
+  }
+}
+
 /* Faint grid + noise overlay for depth (SPEC §3: 2–3% opacity). Pure CSS, no image request. */
 .bg-texture::before {
   content: "";
@@ -343,7 +451,7 @@ html[data-cursor-state="view"] .cursor-ring-circle {
   background: color-mix(in srgb, var(--bg) 75%, transparent);
 }
 .cursor-label {
-  position: relative;
+  position: absolute;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: var(--tracking-label);
@@ -352,8 +460,14 @@ html[data-cursor-state="view"] .cursor-ring-circle {
   opacity: 0;
   transition: opacity var(--dur-micro) var(--ease-out-expo);
 }
-html[data-cursor-state="view"] .cursor-label {
+html[data-cursor-state="view"] .cursor-label[data-for="view"],
+html[data-cursor-state="drag"] .cursor-label[data-for="drag"] {
   opacity: 1;
+}
+html[data-cursor-state="drag"] .cursor-ring-circle {
+  transform: scale(2.2);
+  border-color: var(--violet);
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
 }
 
 /* SplitText line masks: room for descenders so "g"/"y" are not clipped. */
@@ -550,12 +664,262 @@ html[data-cursor-state="view"] .cursor-label {
   /* Shiki output: keep its token colors, use our surface and type. */
   .prose pre {
     overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
     background: var(--bg-elev) !important;
     padding: 1rem 1.25rem;
     font-family: var(--font-mono);
     font-size: 0.875rem;
     line-height: 1.7;
+  }
+  /* Blocks that bring their own layout opt out of prose spacing rules inside them. */
+  .prose .not-prose {
+    color: var(--text);
+  }
+  .prose > .not-prose,
+  .prose > .code-block {
+    margin-block-start: 2em;
+  }
+
+  /* MDX code block: file tab + copy button above Shiki's <pre>. */
+  .code-block {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--bg-elev);
+  }
+  .code-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-block-end: 1px solid var(--border);
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+  }
+  .code-copy {
+    display: inline-flex;
+    min-block-size: 40px;
+    min-inline-size: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 8px;
+    padding-inline: 0.6rem;
+    color: var(--text-dim);
+  }
+  .code-copy:hover {
+    background: var(--bg-elev-2);
+    color: var(--text);
+  }
+
+  /* Gallery masonry (CSS columns) and lightbox. */
+  .gallery {
+    columns: 1;
+    column-gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .gallery {
+      columns: 2;
+    }
+  }
+  @media (min-width: 1024px) {
+    .gallery {
+      columns: 3;
+    }
+  }
+  .gallery > li {
+    break-inside: avoid;
+    margin-block-end: 1rem;
+  }
+  .lightbox {
+    inline-size: 100vw;
+    block-size: 100dvh;
+    max-inline-size: none;
+    max-block-size: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    color: var(--text);
+  }
+  .lightbox::backdrop {
+    background: rgb(0 0 0 / 0.6);
+    backdrop-filter: blur(6px);
+  }
+  .lightbox-img {
+    transition: transform 350ms var(--ease-out-expo);
+    touch-action: pan-y;
+    user-select: none;
+  }
+  .lightbox-btn {
+    display: inline-grid;
+    place-items: center;
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-elev) 85%, transparent);
+    color: var(--text);
+  }
+  .lightbox-btn:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--cyan) 50%, transparent);
+  }
+  .lightbox-btn:disabled {
+    opacity: 0.4;
+  }
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+  }
+
+  /* Video player controls over the frame. */
+  .video-controls {
+    background: linear-gradient(to top, rgb(0 0 0 / 0.75), transparent);
+  }
+  .video-seek {
+    accent-color: var(--cyan);
+  }
+
+  /* Compare: the range input is invisible, so show its focus on the frame. */
+  figure:has(.compare-range:focus-visible) {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+  }
+
+  /* Architecture diagram. */
+  .architecture-svg {
+    inline-size: 100%;
+    block-size: auto;
+    max-block-size: 70vh;
+    overflow: visible;
+  }
+  .arch-label {
+    fill: var(--text);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .arch-note {
+    fill: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+
+  /* 3D board pins (drei <Html>). */
+  .board-pin {
+    position: relative;
+  }
+  .board-pin-dot {
+    display: grid;
+    place-items: center;
+    inline-size: 28px;
+    block-size: 28px;
+    border: 1px solid var(--cyan);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    box-shadow: 0 0 14px -2px var(--cyan);
+  }
+  .board-pin-card {
+    position: absolute;
+    inset-block-start: 34px;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+    inline-size: max-content;
+    max-inline-size: 220px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-elev);
+    padding: 0.6rem 0.75rem;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+  }
+
+  /* Reply Twin chat. */
+  .chat-log {
+    background:
+      radial-gradient(
+        circle at 20% 10%,
+        color-mix(in srgb, var(--violet) 6%, transparent),
+        transparent 60%
+      ),
+      var(--bg);
+  }
+  .chat-bubble {
+    max-inline-size: 80%;
+    border-radius: 14px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.925rem;
+    line-height: 1.45;
+  }
+  .chat-them {
+    align-self: flex-start;
+    border-end-start-radius: 4px;
+    background: var(--bg-elev-2);
+  }
+  .chat-me {
+    align-self: flex-end;
+    border-end-end-radius: 4px;
+    background: color-mix(in srgb, var(--violet) 32%, var(--bg-elev));
+  }
+  .chat-typing {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .chat-typing span {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+    background: var(--text);
+    opacity: 0.4;
+    animation: typing-dot 1s infinite;
+  }
+  .chat-typing span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .chat-typing span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  @keyframes typing-dot {
+    40% {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+  }
+
+  /* IoT relay switch. */
+  .relay-switch {
+    display: inline-flex;
+    min-block-size: 44px;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding-inline: 0.9rem;
+    color: var(--text-dim);
+  }
+  .relay-switch[aria-checked="true"] {
+    border-color: color-mix(in srgb, var(--ok) 60%, transparent);
+    background: color-mix(in srgb, var(--ok) 12%, transparent);
+    color: var(--ok);
+  }
+  .relay-spin {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+html:has(.lightbox[open]) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* SMIL packets ignore the CSS animation rule above, so hide them. */
+  .arch-packets {
+    display: none;
   }
 }

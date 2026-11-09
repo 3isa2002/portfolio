@@ -83,7 +83,12 @@ export function MotionRoot() {
       <div aria-hidden data-cursor-dot className="cursor-dot" />
       <div aria-hidden data-cursor-ring className="cursor-ring">
         <span className="cursor-ring-circle" />
-        <span className="cursor-label">{t.cursor.view}</span>
+        <span className="cursor-label" data-for="view">
+          {t.cursor.view}
+        </span>
+        <span className="cursor-label" data-for="drag">
+          {t.cursor.drag}
+        </span>
       </div>
     </>
   );

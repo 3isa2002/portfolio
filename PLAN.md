@@ -22,16 +22,16 @@ Inter, JetBrains Mono) · ESLint + Prettier · Lighthouse CI · pnpm.
 
 ## Phases
 
-| #   | Phase                     | Main deliverables                                                                                                                                                                                                                               | Done when                                                                        | Status          |
-| --- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------- |
-| 0   | Setup and deploy pipeline | Next.js + TS strict + Tailwind + tokens + fonts, static export, ESLint/Prettier, GitHub repo, Cloudflare Pages, Lighthouse CI workflow                                                                                                          | Placeholder page live on `*.pages.dev`, every push redeploys                     | ✅ done         |
-| 1   | Layout and content model  | Navbar, footer, 6 home sections (static placeholders, real mobile layouts), Velite schema, 3 placeholder projects (AI / Embedded / IoT), grid without effects, case-study pages, `/projects`, 404, CV redirects (`_redirects`), i18n dictionary | Adding a new `.mdx` creates a card + page with no code changes                   | ✅ done (PR #1) |
-| 2   | Motion foundation         | `useReducedMotion`, Lenis ↔ GSAP ticker, SplitText reveals, scroll progress bar, custom cursor, magnetic buttons, About timeline scrub (pinned on desktop)                                                                                      | Every section animates in; with reduced motion everything is static and readable | ✅ done (PR #2) |
-| 3   | 3D background             | R3F particle network (1,500 desktop / 400 mobile), circuit ↔ neural morph on scroll, cursor reaction, bloom, `PerformanceMonitor` downgrade, static fallback                                                                                    | 60 fps on a mid laptop; Lighthouse mobile Perf still ≥ 90                        | ✅ done (PR #3) |
-| 4   | Boot intro                | Full 3.2 s storyboard (SPEC §4), skip button + any input skips, first-visit `localStorage`, 600 ms return version, handoff into the 3D scene                                                                                                    | ≤ 3.2 s, skippable any moment, never shows twice in a row                        | ✅ done (PR #4) |
-| 5   | Projects experience       | Card tilt + sheen + glow, hover preview video, animated filter (`?c=`), shared-element card → case study, `Architecture`, `Gallery` + lightbox, `Video`, `Board3D`, count-up metrics, next-project card, Reply Twin + IoT dashboard demos       | Case study open/close smooth both ways, incl. browser back                       | ☐               |
-| 6   | Extras and SEO            | `⌘K` palette, terminal contact, Konami egg, optional sound, build-time OG images, sitemap, robots, JSON-LD, Cloudflare Web Analytics. Optional "Ask my AI" only if approved                                                                     | All Lighthouse targets in SPEC §8 pass                                           | ☐               |
-| 7   | Real content and launch   | Replace every `TODO(mohamed)`, compress media, large files → R2, cross-browser + real-device testing, custom domain if bought                                                                                                                   | No placeholders remain; site shared publicly                                     | ☐               |
+| #   | Phase                     | Main deliverables                                                                                                                                                                                                                               | Done when                                                                        | Status            |
+| --- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------- |
+| 0   | Setup and deploy pipeline | Next.js + TS strict + Tailwind + tokens + fonts, static export, ESLint/Prettier, GitHub repo, Cloudflare Pages, Lighthouse CI workflow                                                                                                          | Placeholder page live on `*.pages.dev`, every push redeploys                     | ✅ done           |
+| 1   | Layout and content model  | Navbar, footer, 6 home sections (static placeholders, real mobile layouts), Velite schema, 3 placeholder projects (AI / Embedded / IoT), grid without effects, case-study pages, `/projects`, 404, CV redirects (`_redirects`), i18n dictionary | Adding a new `.mdx` creates a card + page with no code changes                   | ✅ done (PR #1)   |
+| 2   | Motion foundation         | `useReducedMotion`, Lenis ↔ GSAP ticker, SplitText reveals, scroll progress bar, custom cursor, magnetic buttons, About timeline scrub (pinned on desktop)                                                                                      | Every section animates in; with reduced motion everything is static and readable | ✅ done (PR #2)   |
+| 3   | 3D background             | R3F particle network (1,500 desktop / 400 mobile), circuit ↔ neural morph on scroll, cursor reaction, bloom, `PerformanceMonitor` downgrade, static fallback                                                                                    | 60 fps on a mid laptop; Lighthouse mobile Perf still ≥ 90                        | ✅ done (PR #3)   |
+| 4   | Boot intro                | Full 3.2 s storyboard (SPEC §4), skip button + any input skips, first-visit `localStorage`, 600 ms return version, handoff into the 3D scene                                                                                                    | ≤ 3.2 s, skippable any moment, never shows twice in a row                        | ✅ done (PR #4)   |
+| 5   | Projects experience       | Card tilt + sheen + glow, hover preview video, animated filter (`?c=`), shared-element card → case study, `Architecture`, `Gallery` + lightbox, `Video`, `Board3D`, count-up metrics, next-project card, Reply Twin + IoT dashboard demos       | Case study open/close smooth both ways, incl. browser back                       | 🔍 in review (PR) |
+| 6   | Extras and SEO            | `⌘K` palette, terminal contact, Konami egg, optional sound, build-time OG images, sitemap, robots, JSON-LD, Cloudflare Web Analytics. Optional "Ask my AI" only if approved                                                                     | All Lighthouse targets in SPEC §8 pass                                           | ☐                 |
+| 7   | Real content and launch   | Replace every `TODO(mohamed)`, compress media, large files → R2, cross-browser + real-device testing, custom domain if bought                                                                                                                   | No placeholders remain; site shared publicly                                     | ☐                 |
 
 ## Acceptance targets (every phase, SPEC §8)
 
@@ -80,6 +80,18 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   A CSS failsafe hides the overlay after 6 s if the timeline never starts. Desktop starts loading the
   3D scene when the intro starts, so it is there at the handoff; phones keep loading it on the first
   interaction. Sound (spec §4) is scheduled with the navbar toggle in Phase 6.
+- **Card → case study transition:** React `<ViewTransition>` (React 19.3 + Next 16 App Router,
+  browser View Transitions API) instead of Motion `layoutId`: the cover shares `cover-<slug>` between
+  the card and the case-study hero and morphs; content rises in after it. Motion's `layoutId` does not
+  survive an App Router route change reliably; ViewTransition is built for it and degrades to an
+  instant swap without browser support. React runs `popstate` transitions synchronously (no view
+  transition), so `components/motion/BackTransitions.tsx` starts the transition itself on Back/Forward
+  and hands the event to Next's router after the old frame is captured: Back reverses the morph.
+- **Motion (filter reflow)** is loaded on the first intent to filter (pointer over / focus on the pills;
+  a click waits for it), keeping ~50 KB out of the home page's initial JS.
+- **Media without ffmpeg:** placeholder clips (`preview.webm`, `demo.webm`) were recorded in headless
+  Chrome from a canvas with MediaRecorder; placeholder screenshots are sharp-rendered SVGs. All are
+  `TODO(mohamed)`.
 - **LCP in CI is a warning (decided 2026-11-09):** Lighthouse CI simulates Slow 4G, stricter than the
   spec's "4G". Its simulated LCP sits at ≈ 2.5–2.7 s even for the Phase 0 placeholder page (the floor is
   the Next/React runtime), while observed LCP is ≈ 0.4 s. CI keeps hard gates on Perf ≥ 90, A11y / BP /
@@ -188,6 +200,32 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
 - Preview check: first paint → end 3.15 s (3 runs) after letting the timeline absorb up to 0.6 s of GSAP
   download (it was 3.33 s on the real network).
 - Merged as PR #4 (7f39f68); production deploy from `main`.
+
+### Phase 5 — Projects experience (2026-11-09)
+
+- Cards: 3D tilt toward the cursor (max 8°), cursor-following sheen, border glow in the category colour,
+  cover → `preview` loop crossfade on hover; touch: preview plays at 60% in view; reduced motion: no tilt
+  or autoplay. Filter: Motion `layout` reflow, leaving cards fade + scale to 0.95, state in `?c=`.
+- Case study: shared-element cover morph in and back (incl. the browser Back button), content rises in,
+  metrics count up (screen readers keep the real value), demo section from frontmatter `demo`.
+- MDX blocks: `<Architecture>` (build-time SVG, ranked layout, horizontal desktop / vertical phone, SMIL
+  data packets, boxes and lines draw in), `<Gallery>` (masonry with build-time image sizes; native
+  `<dialog>` lightbox: arrows, swipe, zoom, captions, Esc, focus return), `<Video>` (custom controls,
+  `preload=none` until near, captions track; YouTube IDs load youtube-nocookie only on click),
+  fenced code with file tab + copy button, `<Compare>` (keyboard-accessible slider), `<Board3D>`
+  (lazy R3F: orbit, zoom buttons, numbered pins; touch starts locked; placeholder board until a .glb),
+  `<Demo>`. Reply Twin chat demo and IoT dashboard demo (seeded data, relay switch), each its own chunk.
+- Skills: interactive graph on desktop (lines from each skill to the projects using it, hover/focus to
+  light them); chips on phones/tablets.
+- Fixes found while testing: the next-project card no longer shares a transition name with grid
+  cards; Board3D's WebGL check waits until the board is near (it cost ~1 s of main thread on load:
+  Perf 68 → 94); dimmer 3D background on case studies.
+- Verified in Chrome: no page or hydration errors on all 5 pages; filter animation sampled mid-flight;
+  view-transition groups recorded forward and back; lightbox, video, demos, board pins, compare,
+  skill graph; phone (touch preview, locked board, vertical diagram, no overflow); reduced motion.
+- Initial JS: home 193.9 KB gz, /projects 187.3 KB, case study 189.8 KB (all under 200 KB).
+- Local Lighthouse (mobile): home Perf 92–94 (6 runs, one outlier at 87) · case studies 92–94 ·
+  /projects 94 · A11y / BP / SEO 100 everywhere · CLS ≤ 0.023.
 
 ## Inputs needed from Mohamed (before Phase 7, SPEC §11)
 

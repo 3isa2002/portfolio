@@ -1,7 +1,8 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { site } from "@/content/site";
 import { t } from "@/lib/i18n";
-import { getProjectsUsing } from "@/lib/projects";
+import { getProjects, getProjectsUsing } from "@/lib/projects";
+import { type GraphGroup, SkillGraph } from "./SkillGraph";
 
 const accentClass = {
   cyan: { dot: "bg-cyan", text: "text-cyan" },
@@ -10,11 +11,19 @@ const accentClass = {
 } as const;
 
 /**
- * Section 4 — Skills (SPEC §5.4). Phase 1: grouped chips (this is also the final mobile layout).
- * Each chip shows how many projects list it in their `stack`; the interactive desktop skill
- * graph that lights edges to those projects builds on the same data later.
+ * Section 4 — Skills (SPEC §5.4). Desktop: the interactive skill graph (hover a skill to light
+ * the projects that used it). Phones and tablets: grouped chips with per-skill project counts.
+ * Both read the same data: site.skills and each project's `stack`.
  */
 export function Skills() {
+  const graphGroups: GraphGroup[] = site.skills.map((g) => ({
+    id: g.id,
+    label: t.skills.groups[g.id],
+    accent: g.accent,
+    skills: g.items.map((name) => ({ name, projects: getProjectsUsing(name).map((p) => p.slug) })),
+  }));
+  const graphProjects = getProjects().map((p) => ({ slug: p.slug, title: p.title, url: p.url }));
+
   return (
     <section id="skills" aria-labelledby="skills-title" className="section">
       <div className="container-site">
@@ -25,7 +34,11 @@ export function Skills() {
           id="skills-title"
         />
 
-        <div className="grid gap-6 lg:grid-cols-3" data-reveal="stagger">
+        <div className="hidden lg:block" data-reveal="up">
+          <SkillGraph groups={graphGroups} projects={graphProjects} />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3 lg:hidden" data-reveal="stagger">
           {site.skills.map((group) => {
             const accent = accentClass[group.accent];
             return (
