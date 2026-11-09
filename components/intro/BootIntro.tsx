@@ -268,11 +268,13 @@ function playFull(gsap: Gsap, root: HTMLElement | null, done: () => void): () =>
   tl.to(bg ?? [], { opacity: 0, duration: 0.13, ease: "power1.out" }, 3.02);
   tl.to(root, { opacity: 0, duration: 0.01 }, 3.15); // ends at 3.16 s
 
-  // The first 0.3 s is only the black screen and caret, which has been on screen since first
-  // paint while GSAP loaded: start at the matching point so the whole intro stays within 3.2 s.
+  // The black screen and caret have been on screen since first paint while GSAP downloaded:
+  // start the timeline at the matching point so the whole intro stays within 3.2 s of first
+  // paint. On a slow download the first log lines simply appear already typed (capped at 0.6 s,
+  // so the log is always seen).
   const painted = performance.getEntriesByName("first-contentful-paint")[0]?.startTime;
   if (painted !== undefined)
-    tl.time(Math.min(0.3, Math.max(0, (performance.now() - painted) / 1000)));
+    tl.time(Math.min(0.6, Math.max(0, (performance.now() - painted) / 1000)));
 
   // Skip: any click, scroll, wheel or key jumps to the final state in 300 ms.
   const skip = () => {
