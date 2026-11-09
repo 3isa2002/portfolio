@@ -32,18 +32,18 @@ pnpm check        # typecheck + lint + prettier
 
 ## Deploy (Cloudflare Pages)
 
-Pushing to `main` deploys production; every other branch gets its own preview URL.
+Live: **https://mohamed-eissa.pages.dev**. Pushing to `main` deploys production; every other branch gets its own preview URL.
 
 One-time setup in the Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**:
 
-| Setting                | Value                                     |
-| ---------------------- | ----------------------------------------- |
-| Repository             | `3isa2002/portfolio`                      |
-| Production branch      | `main`                                    |
-| Framework preset       | None                                      |
-| Build command          | `pnpm build`                              |
-| Build output directory | `out`                                     |
-| Environment variables  | `NODE_VERSION=24`, `PNPM_VERSION=12.11.2` |
+| Setting                | Value                                          |
+| ---------------------- | ---------------------------------------------- |
+| Repository             | `3isa2002/portfolio` (project `mohamed-eissa`) |
+| Production branch      | `main`                                         |
+| Framework preset       | None                                           |
+| Build command          | `pnpm build`                                   |
+| Build output directory | `out`                                          |
+| Environment variables  | `NODE_VERSION=24`, `PNPM_VERSION=12.11.2`      |
 
 ## CI
 
