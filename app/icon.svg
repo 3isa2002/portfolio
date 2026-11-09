@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Placeholder "ME" chip mark. Final favicon set comes in Phase 6. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="#07070B"/>
+  <g stroke="url(#g)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M11 3v3M16 3v3M21 3v3M11 26v3M16 26v3M21 26v3M3 11h3M3 16h3M3 21h3M26 11h3M26 16h3M26 21h3"/>
+    <rect x="6.5" y="6.5" width="19" height="19" rx="3" fill="none"/>
+  </g>
+  <text x="16" y="20" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="url(#g)">ME</text>
+</svg>

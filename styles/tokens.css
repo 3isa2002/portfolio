@@ -1,0 +1,49 @@
+/*
+ * Design tokens — SPEC §3. The single source for colors, type scale, spacing and motion.
+ * Tailwind reads these through the `@theme inline` block in app/globals.css.
+ * Dark only: there is no light theme.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Color */
+  --bg: #07070b;
+  --bg-elev: #0e0e15;
+  --bg-elev-2: #15151f;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #ededf2;
+  --text-dim: #8a8a9a;
+  --cyan: #22d3ee; /* hardware / embedded / IoT */
+  --violet: #8b5cf6; /* AI / GenAI */
+  --gradient: linear-gradient(135deg, var(--cyan), var(--violet));
+  --ok: #34d399;
+
+  /* Type scale (desktop / mobile via clamp) */
+  --text-display: clamp(3rem, 1.5rem + 6vw, 6rem); /* 48 → 96px */
+  --text-h2: clamp(2.125rem, 1.4rem + 2.9vw, 3.5rem); /* 34 → 56px */
+  --text-h3: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem); /* 22 → 28px */
+  --text-body: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); /* 16 → 18px */
+  --text-label: 0.8125rem; /* 13px */
+  --tracking-label: 0.08em;
+
+  /* Layout */
+  --container-max: 1280px;
+  --gutter: 24px;
+  --section-gap: 96px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --dur-micro: 200ms;
+  --dur-reveal: 750ms;
+  --dur-page: 600ms;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 48px;
+    --section-gap: 128px;
+  }
+}

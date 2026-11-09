@@ -1,0 +1,7 @@
+.next
+out
+.velite
+node_modules
+pnpm-lock.yaml
+SPEC.md
+AGENTS.md
