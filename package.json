@@ -3,21 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "content": "velite build --strict",
+    "images": "node scripts/optimize-images.mts",
+    "prepare:assets": "pnpm content && pnpm images",
+    "dev": "pnpm prepare:assets && next dev",
+    "build": "pnpm prepare:assets && next build && node scripts/fix-segment-prefetch.mts",
     "start": "npx serve@14 out",
     "lint": "eslint .",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "pnpm content && next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check"
   },
   "dependencies": {
+    "lucide-react": "^1.70.0",
     "next": "16.4.5",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "velite": "^0.4.0"
   },
   "devDependencies": {
+    "@shikijs/rehype": "^4.6.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -25,6 +31,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
+    "shiki": "^4.6.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

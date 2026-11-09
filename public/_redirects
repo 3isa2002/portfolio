@@ -1,0 +1,3 @@
+# Cloudflare Pages redirects (SPEC §5 routes). Short share links for the two CVs.
+/cv/ai          /cv/mohamed-eissa-ai.pdf          302
+/cv/embedded    /cv/mohamed-eissa-embedded.pdf    302

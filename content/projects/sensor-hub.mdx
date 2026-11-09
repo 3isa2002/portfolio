@@ -1,0 +1,47 @@
+---
+# TODO(mohamed): placeholder project — replace text, links, metrics and media with the real ones.
+title: "Home Sensor Hub"
+slug: "sensor-hub"
+summary: "ESP32 nodes stream temperature and humidity over MQTT to a live dashboard with relay control"
+category: ["IoT", "Embedded"]
+featured: true
+order: 3
+year: 2025
+status: "shipped"
+role: "Hardware, firmware and dashboard"
+stack: ["ESP32", "MQTT", "C++", "Node-RED"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002"
+  live: ""
+  video: ""
+metrics:
+  - { label: "Nodes", value: "4" }
+  - { label: "Battery life", value: "6 months" }
+  - { label: "Update rate", value: "10 s" }
+demo: "iot-dashboard"
+---
+
+<Callout>TODO(mohamed): placeholder case study. The structure is real; the words are not.</Callout>
+
+## Problem
+
+I wanted to see temperature and humidity in every room and switch a fan remotely, without a cloud subscription.
+
+## Approach
+
+Battery-powered ESP32 nodes wake every 10 seconds, read their sensors and publish to a local MQTT broker.
+A dashboard subscribes to the topics and can toggle a relay node.
+
+```cpp title="node.ino"
+void loop() {
+  float t = sensor.readTemperature();
+  float h = sensor.readHumidity();
+  mqtt.publish("home/livingroom/climate", payload(t, h));
+  esp_deep_sleep(10 * 1000000ULL);
+}
+```
+
+## Result
+
+Four nodes have run for months on a single charge, and the dashboard updates live on any device on the network.

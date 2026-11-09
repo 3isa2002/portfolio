@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "#site/content": ["./.velite"]
     },
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
