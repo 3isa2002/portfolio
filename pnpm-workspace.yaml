@@ -1,3 +1,7 @@
 allowBuilds:
+  # Reviewed: none of these need install scripts. sharp and esbuild ship prebuilt
+  # per-platform binaries as optional dependencies; pnpm 12 fails CI installs on
+  # unreviewed build scripts, so each one is listed explicitly.
+  esbuild: false
   sharp: false
   unrs-resolver: false
