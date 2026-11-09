@@ -4,7 +4,13 @@ import { useLayoutEffect, useRef } from "react";
 import { t } from "@/lib/i18n";
 import { prefersReducedMotion } from "@/lib/motion/media";
 import { INTRO_DONE, INTRO_START } from "@/lib/motion/wake";
-import { play } from "@/lib/sound";
+import {
+  introSoundEnd,
+  introSoundStart,
+  justUnlocked,
+  soundWaiting,
+  unlockAudio,
+} from "@/lib/sound";
 import { chipGeometry } from "./chip-geometry";
 import { nameScramble } from "./name-canvas";
 
@@ -22,6 +28,11 @@ const VIOLET = "#8b5cf6";
  * The name scrambles on a canvas laid exactly over it (a canvas is never an LCP candidate), then
  * the overlay fades and the real one is there. Skip (button, click, wheel, touch, key) finishes
  * in 300 ms. GSAP is imported on demand.
+ *
+ * Sound: the intro has its own score (lib/audio-engine.ts). Browsers keep a page silent until the
+ * first click, tap or key, so while audio is still blocked the first click or tap on the intro
+ * turns sound on instead of skipping (a hint says so), and the score joins at that point. The
+ * Skip button, Esc, the wheel or a second click skip as usual.
  *
  * It plays on every visit to the home page (Mohamed's decision, 2026-11-09, replacing SPEC §4's
  * "first visit only"): on a full page load `IntroScript` turns it on before first paint; on a
@@ -52,7 +63,6 @@ export function BootIntro() {
     // hero underneath must paint (it is the LCP element) before any intro work starts.
     const cancelWait = afterFirstPaint(() => {
       window.dispatchEvent(new Event(INTRO_START));
-      play("hum"); // heard when sound is on and the visitor has interacted with the page
       void import("gsap")
         .then(({ gsap }) => {
           if (disposed) return;
@@ -121,6 +131,9 @@ export function BootIntro() {
 
         <canvas className="boot-name" data-boot-name />
       </div>
+      <p className="boot-sound-hint label" data-boot-hint aria-hidden>
+        {t.intro.soundHint}
+      </p>
       <button type="button" className="boot-skip btn btn-ghost" data-boot-skip>
         {t.intro.skip} <span aria-hidden>→</span>
       </button>
@@ -184,11 +197,13 @@ function playFull(
   // The name resolves on a canvas laid exactly over the real heading (see name-canvas.ts).
   const drawName = canvas && heroName ? nameScramble(canvas, heroName) : null;
 
+  const hint = q("[data-boot-hint]")[0];
   let finished = false;
   const finish = () => {
     if (finished) return;
     finished = true;
     removeSkip();
+    introSoundEnd(false);
     done();
   };
 
@@ -284,11 +299,30 @@ function playFull(
   if (catchUp && painted !== undefined)
     tl.time(Math.min(0.6, Math.max(0, (performance.now() - painted) / 1000)));
 
-  // Skip: any click, wheel, touch or key jumps to the final state in 300 ms.
-  const skip = () => {
+  // The score follows the timeline from wherever it is when audio becomes available.
+  introSoundStart(() => tl.time());
+  if (hint && soundWaiting())
+    tl.fromTo(hint, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0.3);
+  const hideHint = () => hint && gsap.to(hint, { autoAlpha: 0, duration: 0.2, overwrite: true });
+
+  // Skip: any click, wheel, touch or key jumps to the final state in 300 ms — except that while
+  // audio is still blocked, the first click / tap / key (not the Skip button, not Esc) turns
+  // sound on and lets the intro play on with its score.
+  const skip = (e: Event) => {
     if (finished) return;
+    const onSkipButton = e.target instanceof Element && e.target.closest("[data-boot-skip]");
+    const isEsc = e instanceof KeyboardEvent && e.key === "Escape";
+    // justUnlocked: the navbar's listener may have unlocked audio a moment earlier in this same
+    // click (it registers first); that click is still the "turn sound on" one.
+    if (e.type !== "wheel" && !onSkipButton && !isEsc && (soundWaiting() || justUnlocked())) {
+      unlockAudio();
+      hideHint();
+      return;
+    }
     removeSkip();
+    hideHint();
     tl.kill();
+    introSoundEnd(true);
     gsap.to(root, { opacity: 0, duration: 0.3, ease: "power2.out", onComplete: finish });
   };
   // Only things the visitor does: a `scroll` event also fires when the browser restores the
@@ -303,5 +337,6 @@ function playFull(
   return () => {
     removeSkip();
     tl.kill();
+    if (!finished) introSoundEnd(true);
   };
 }

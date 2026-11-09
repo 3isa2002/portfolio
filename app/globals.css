@@ -209,6 +209,14 @@ html[data-intro="full"] .boot:not([data-running]) {
   opacity: 0;
   visibility: hidden;
 }
+.boot-sound-hint {
+  position: absolute;
+  right: var(--gutter);
+  bottom: calc(2rem + 56px);
+  color: var(--text-dim);
+  opacity: 0;
+  visibility: hidden;
+}
 
 /* Reduced motion: no intro; the hero fades in instead (opacity only, allowed by SPEC §4). */
 html[data-intro="calm"] #hero {

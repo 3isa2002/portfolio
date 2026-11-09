@@ -1,26 +1,28 @@
 /**
  * UI sound (SPEC §4, §7): on by default (Mohamed's decision, 2026-11-09), toggled from the navbar
- * or the command palette, remembered in localStorage. Every sound is synthesized with the Web
- * Audio API, so there are no audio files to download.
- *
- *   tick  a short, soft click for hovers and confirmations
- *   hum   a low boot hum with a rising "power-on" tone
+ * or the command palette, remembered in localStorage. All sounds are synthesized (Web Audio, no
+ * files) by lib/audio-engine.ts, which loads only once the browser allows audio.
  *
  * Browsers keep a page silent until the visitor's first click, tap or key (autoplay policy), so:
  * - the navbar icon shows sound as active only once audio can really play (`soundActive`);
- * - the moment audio becomes available, the hum plays once, so that first interaction is heard;
- * - a press on the sound button that is what unlocked audio does not also switch sound off
- *   (`justUnlocked`).
+ * - the moment audio becomes available, the site "powers on": the boot intro's score if the
+ *   intro is playing (from where it is), otherwise a hum; then the background ambience starts;
+ * - a press on the sound button that is what unlocked audio does not also mute it (`justUnlocked`).
  */
+type Engine = typeof import("./audio-engine");
+
 const KEY = "sound";
 /** Fired when the setting changes or audio becomes (un)available. */
 export const SOUND_EVENT = "sound:change";
 
 let ctx: AudioContext | null = null;
-let lastTick = 0;
-/** Whether the hum has greeted the visitor since audio last became available / sound was enabled. */
+let engine: Engine | null = null;
+let loading: Promise<Engine> | null = null;
+/** Whether the visitor has been "greeted" (hum or intro score) since audio became available. */
 let greeted = false;
 let unlockedAt = -Infinity;
+/** The boot intro while it plays: where its timeline is, and whether its score has started. */
+let intro: { time: () => number; scored: boolean } | null = null;
 
 export function soundEnabled(): boolean {
   try {
@@ -33,6 +35,11 @@ export function soundEnabled(): boolean {
 /** Sound is on and the browser lets the page play it right now. */
 export function soundActive(): boolean {
   return soundEnabled() && ctx?.state === "running";
+}
+
+/** Sound is on but the browser has not allowed audio yet (no click, tap or key so far). */
+export function soundWaiting(): boolean {
+  return soundEnabled() && ctx?.state !== "running";
 }
 
 /** True for a moment after audio became available: that click was the unlock, not a toggle. */
@@ -54,15 +61,62 @@ export function setSound(on: boolean) {
   if (on) {
     greeted = false;
     audio();
-    greet();
+    wake();
+  } else {
+    engine?.stopIntro();
+    engine?.stopAmbient();
   }
   window.dispatchEvent(new CustomEvent(SOUND_EVENT, { detail: on }));
 }
 
-function greet() {
-  if (greeted || !soundEnabled() || ctx?.state !== "running") return;
-  greeted = true;
-  playNow(ctx, "hum");
+/** One-shot UI sounds. Silent until audio is available. */
+export function play(kind: "tick" | "hum") {
+  if (!soundActive()) return;
+  if (engine) engine.play(kind);
+  else void loadEngine();
+}
+
+/** BootIntro: its timeline started. `time` reports where the timeline is (seconds). */
+export function introSoundStart(time: () => number) {
+  intro = { time, scored: false };
+  wake();
+}
+
+/** BootIntro: it finished (or was skipped, or the page changed). */
+export function introSoundEnd(skipped: boolean) {
+  const wasScored = intro?.scored ?? false;
+  intro = null;
+  if (skipped) engine?.stopIntro();
+  // The score already said hello; otherwise a hum would, once audio is available.
+  if (wasScored) greeted = true;
+  wake();
+}
+
+function loadEngine(): Promise<Engine> {
+  loading ??= import("./audio-engine").then((m) => (engine = m));
+  return loading;
+}
+
+/** Audio is (or may now be) available: greet once, then keep the ambience going. */
+function wake() {
+  if (!soundActive()) return;
+  void loadEngine().then((e) => {
+    if (!ctx || !soundActive()) return;
+    e.attach(ctx);
+    if (intro) {
+      if (!intro.scored) {
+        intro.scored = true;
+        greeted = true;
+        e.playIntro(intro.time());
+      }
+      return; // the ambience starts when the intro ends
+    }
+    if (!greeted) {
+      greeted = true;
+      e.play("hum");
+    }
+    e.startAmbient();
+  });
 }
 
 function audio(): AudioContext | null {
@@ -72,14 +126,14 @@ function audio(): AudioContext | null {
     ctx = ac;
     ac.addEventListener("statechange", () => {
       if (ac.state === "running") unlockedAt = performance.now();
-      greet();
+      wake();
       window.dispatchEvent(new CustomEvent(SOUND_EVENT));
     });
     // Created during a gesture, a context can start out running (no statechange follows).
     if (ac.state === "running") {
       unlockedAt = performance.now();
       queueMicrotask(() => {
-        greet();
+        wake();
         window.dispatchEvent(new CustomEvent(SOUND_EVENT));
       });
     }
@@ -87,62 +141,4 @@ function audio(): AudioContext | null {
   // Suspended until the browser allows audio; resume() takes effect after a gesture.
   if (ctx.state === "suspended") void ctx.resume().catch(() => {});
   return ctx;
-}
-
-export function play(kind: "tick" | "hum") {
-  if (!soundEnabled()) return;
-  const ac = audio();
-  // Not allowed yet: stay silent. The first interaction plays the hum (see greet).
-  if (!ac || ac.state !== "running") return;
-  if (kind === "hum") greeted = true;
-  playNow(ac, kind);
-}
-
-function playNow(ac: AudioContext, kind: "tick" | "hum") {
-  const now = ac.currentTime;
-  const out = ac.createGain();
-  out.connect(ac.destination);
-
-  if (kind === "tick") {
-    if (now - lastTick < 0.04) return; // never a machine-gun on fast mouse moves
-    lastTick = now;
-    const osc = ac.createOscillator();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(1800, now);
-    osc.frequency.exponentialRampToValueAtTime(900, now + 0.03);
-    out.gain.setValueAtTime(0.0001, now);
-    out.gain.exponentialRampToValueAtTime(0.035, now + 0.004);
-    out.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-    osc.connect(out);
-    osc.start(now);
-    osc.stop(now + 0.06);
-    return;
-  }
-
-  // hum: two detuned low oscillators swelling in, plus a soft rising "power-on" tone.
-  out.gain.setValueAtTime(0.0001, now);
-  out.gain.exponentialRampToValueAtTime(0.06, now + 0.35);
-  out.gain.exponentialRampToValueAtTime(0.0001, now + 1.6);
-  for (const f of [55, 55.7]) {
-    const o = ac.createOscillator();
-    o.type = "sawtooth";
-    o.frequency.value = f;
-    const lp = ac.createBiquadFilter();
-    lp.type = "lowpass";
-    lp.frequency.value = 220;
-    o.connect(lp).connect(out);
-    o.start(now);
-    o.stop(now + 1.7);
-  }
-  const rise = ac.createOscillator();
-  const g = ac.createGain();
-  rise.type = "sine";
-  rise.frequency.setValueAtTime(220, now + 0.2);
-  rise.frequency.exponentialRampToValueAtTime(880, now + 0.9);
-  g.gain.setValueAtTime(0.0001, now + 0.2);
-  g.gain.exponentialRampToValueAtTime(0.02, now + 0.5);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
-  rise.connect(g).connect(ac.destination);
-  rise.start(now + 0.2);
-  rise.stop(now + 1.2);
 }
