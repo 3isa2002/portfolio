@@ -29,7 +29,7 @@ export const site = {
 
   about: [
     "I'm a Computer Science graduate (FUE, 2024) in Cairo who builds Generative AI applications in Python, and the connected devices they run on.",
-    "Wanas, my ESP32-S3 desk assistant, turns spoken commands into actions through Gemini; my graduation project read and validated Arabic ID cards with OCR.",
+    "Wanas, my ESP32-S3 desk assistant, turns spoken commands into actions; my graduation project read and validated Arabic ID cards with OCR.",
     "I also ship client work end to end, most recently a booking and payments platform now in production, and I'm growing into LLM agents, workflow automation and IoT connectivity.",
   ],
 
@@ -69,11 +69,14 @@ export const site = {
       accent: "violet",
       items: [
         "Python",
+        "RAG",
+        "Ollama",
+        "FastAPI",
         "Gemini API",
         "OpenAI API",
         "Prompt engineering",
-        "Tesseract OCR",
         "OpenCV",
+        "Tesseract OCR",
         "n8n",
       ],
     },
@@ -82,15 +85,17 @@ export const site = {
       accent: "neutral",
       items: [
         "Java",
+        "Kotlin",
         "TypeScript",
         "Next.js",
         "Flutter",
+        "PHP",
         "Supabase",
         "PostgreSQL",
         "MySQL",
+        "Docker",
         "Git",
         "Linux",
-        "Vercel",
       ],
     },
   ] satisfies SkillGroup[],

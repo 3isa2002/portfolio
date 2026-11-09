@@ -1,0 +1,60 @@
+---
+# From the gaming-lounge-manager README (2026-11-09). TODO(mohamed): add the year it was built and
+# a screenshot of the screen dashboard.
+title: "Gaming Lounge Manager"
+slug: "gaming-lounge"
+summary: "An Android app running a real PlayStation lounge: 21 screens, live session timers, automatic pricing and shift reports"
+category: ["Mobile"]
+featured: true
+order: 5
+status: "shipped"
+role: "Solo — built for a real PS lounge"
+stack: ["Java", "Android", "Firebase Firestore"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/gaming-lounge-manager"
+  live: ""
+  video: ""
+metrics:
+  - { label: "Screens managed", value: "21" }
+  - { label: "Pricing tiers", value: "4" }
+---
+
+## Problem
+
+A PlayStation shop with 21 screens was tracking by hand who sat at which screen, for how long, on
+which console, and what each customer owed.
+
+## Approach
+
+An Android app on a tablet at the counter:
+
+- **Screen dashboard:** 21 color-coded buttons, free or busy, with a running count of each.
+- **Sessions:** tap a free screen, pick PS4 or PS5 and Single or Multi; a timer starts and keeps
+  running even if the app is closed, with a manual correction for the start time.
+- **Automatic pricing:** cost from device, mode and elapsed time, rounded to the nearest tier
+  (quarter, half, three quarters, full hour); a capped manual discount.
+- **History and shift reports:** every finished session is written to Firebase Firestore; reports
+  filter by screen, device, mode and time range, with a one-tap "current shift" view and totals.
+
+<Architecture
+  nodes={[
+    { id: "ui", label: "Screen dashboard", note: "21 screens", kind: "data" },
+    { id: "timer", label: "Session timer", note: "survives app close", kind: "data" },
+    { id: "price", label: "Pricing", note: "device × mode × tier", kind: "data" },
+    { id: "fs", label: "Firestore", note: "session history", kind: "data" },
+    { id: "rep", label: "Shift reports", note: "filters + totals", kind: "data" },
+  ]}
+  edges={[
+    ["ui", "timer"],
+    ["timer", "price"],
+    ["price", "fs"],
+    ["fs", "rep"],
+  ]}
+  title="Gaming lounge: a screen session is timed and priced, saved to Firestore, and summed up in shift reports."
+/>
+
+## Result
+
+It runs at the counter day to day, replacing the paper log: the owner sees free screens at a glance
+and closes each shift with a report of time and revenue.

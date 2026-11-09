@@ -26,6 +26,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     subtitle: project.summary,
     cover: project.coverSrc,
     accent: accentFor(category) === "violet" ? "violet" : "cyan",
-    footer: `${site.name} · ${project.year}`,
+    footer: project.year ? `${site.name} · ${project.year}` : site.name,
   });
 }

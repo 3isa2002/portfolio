@@ -1,0 +1,61 @@
+---
+# From the face-attendance-anti-spoofing-fork README (2026-11-09). Part of the MAVS graduation project.
+title: "Face Attendance with Anti-Spoofing"
+slug: "face-attendance"
+summary: "Face-recognition attendance that rejects photos and screens, with a signed, tamper-evident record per user"
+category: ["AI"]
+featured: false
+order: 7
+year: 2024
+status: "shipped"
+role: "Graduation project (MAVS) — integration, digital signature, UI"
+stack: ["Python", "OpenCV", "face_recognition", "dlib", "Tkinter", "SQLite", "PyCryptodome"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/face-attendance-anti-spoofing-fork"
+  live: ""
+  video: ""
+---
+
+## Problem
+
+The face side of MAVS, my graduation project at Future University in Egypt (the ID-card side is the
+[Arabic OCR pipeline](/projects/arabic-ocr)). An attendance system has to recognize a person's face,
+must not be fooled by someone holding up a photo or a phone screen, and its records must not be
+quietly altered later.
+
+## Approach
+
+It builds on two open-source projects: a face-attendance system for capture, registration and
+matching, and Silent-Face-Anti-Spoofing for liveness detection. My part was what joins and secures
+them:
+
+- **One flow:** every registration and verification runs through the anti-spoofing check before
+  face recognition.
+- **Digital signature:** each registered user gets a signature built from their 68 facial
+  landmarks (dlib) and AES encryption, so every registration is a signed, tamper-evident record.
+- **Storage and UI:** a SQLite layer storing each user's image, face embedding and signature, and
+  the Tkinter registration and verification screens.
+
+<Architecture
+  nodes={[
+    { id: "cam", label: "Webcam frame", note: "blur check", kind: "data" },
+    { id: "live", label: "Liveness check", note: "MiniFASNet", kind: "ai" },
+    { id: "rec", label: "Face recognition", note: "embeddings", kind: "ai" },
+    { id: "sig", label: "Digital signature", note: "landmarks + AES", kind: "ai" },
+    { id: "db", label: "SQLite", note: "image, embedding, signature", kind: "data" },
+  ]}
+  edges={[
+    ["cam", "live"],
+    ["live", "rec"],
+    ["rec", "sig"],
+    ["sig", "db"],
+  ]}
+  title="Face attendance: a webcam frame passes a liveness check, then face recognition; registrations get a landmark-based digital signature and are stored in SQLite."
+/>
+
+## Result
+
+Photos and screen replays are rejected before recognition runs, and each registration carries a
+signature that exposes tampering. The public repository ships without any face data: the database
+folder is empty on purpose, since face images and embeddings are personal data.

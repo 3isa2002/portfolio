@@ -11,7 +11,9 @@ export type ProjectCardData = Pick<
 >;
 
 /** Home and grid order: `order` ascending, then newest first. */
-const sorted: Project[] = [...allProjects].sort((a, b) => a.order - b.order || b.year - a.year);
+const sorted: Project[] = [...allProjects].sort(
+  (a, b) => a.order - b.order || (b.year ?? 0) - (a.year ?? 0),
+);
 
 export function getProjects(): Project[] {
   return sorted;

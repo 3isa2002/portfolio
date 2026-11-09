@@ -37,7 +37,7 @@ export function projectSchema(project: Project): Record<string, unknown> {
     name: project.title,
     description: project.summary,
     url: `${site.url}${project.url}`,
-    dateCreated: String(project.year),
+    ...(project.year ? { dateCreated: String(project.year) } : {}),
     keywords: project.stack.join(", "),
     genre: project.category.join(", "),
     creativeWorkStatus: project.status,

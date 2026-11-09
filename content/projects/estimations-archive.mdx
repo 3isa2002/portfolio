@@ -1,0 +1,46 @@
+---
+# From the engineering-estimations-archive README and the CVs (2026-11-09).
+title: "Engineering Estimations Archive"
+slug: "estimations-archive"
+summary: "A PHP/MySQL system that replaced a paper process for engineering estimations, contracts and disbursements"
+category: ["Web"]
+featured: false
+order: 9
+year: 2025
+status: "shipped"
+role: "Solo — Systems Branch, during military service"
+stack: ["PHP", "MySQL", "PhpSpreadsheet", "JavaScript"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/engineering-estimations-archive"
+  live: ""
+  video: ""
+metrics:
+  - { label: "Disciplines", value: "2" }
+  - { label: "Backup schedules", value: "3" }
+---
+
+## Problem
+
+At the Systems Branch, engineering estimations, civil and electromechanical (MEP) contracts,
+consultant reviews and payments were tracked in loose spreadsheets and paper binders.
+
+## Approach
+
+A PHP/MySQL web application that follows each project's whole document lifecycle:
+
+- **Civil and MEP workflows** with discipline-specific forms, from estimation and consultant review
+  to contract, supply statements and final handover.
+- **Financial tracking:** disbursements across installments against the contract value, with a live
+  execution percentage, tax status, and estimated versus final cost.
+- **Cost estimations module** for preliminary estimates, with attached scans, Excel breakdowns and
+  signed PDFs.
+- **Reports:** Excel and CSV exports filtered by date, engineer and project type (PhpSpreadsheet),
+  and print-ready views.
+- **Role-based access** for administrators and engineers, and scheduled backups (daily, weekly or
+  monthly) with a retention policy.
+
+## Result
+
+The branch's estimations and contracts moved from paper to one searchable, backed-up system, with
+each engineer seeing their own projects and deadlines.
