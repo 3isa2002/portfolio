@@ -15,6 +15,9 @@ links:
   github: "https://github.com/3isa2002"
   live: ""
   video: ""
+gallery:
+  - { src: "shot-bench.webp", caption: "Bench setup with the motor under load" }
+  - { src: "shot-scope.webp", caption: "Phase current on the scope" }
 metrics:
   - { label: "Loop rate", value: "20 kHz" }
   - { label: "Speed error", value: "< 1%" }
@@ -31,6 +34,23 @@ A small robot needed smooth, repeatable motor speed under changing load, control
 A PID loop runs in a timer interrupt; FreeRTOS tasks handle CAN messages, telemetry and fault detection
 so the control loop is never blocked.
 
+<Architecture
+  nodes={[
+    { id: "enc", label: "Hall sensors", note: "rotor position", kind: "hw" },
+    { id: "mcu", label: "STM32F4", note: "PID @ 20 kHz", kind: "hw" },
+    { id: "drv", label: "Gate driver", note: "3-phase bridge", kind: "hw" },
+    { id: "motor", label: "BLDC motor", kind: "hw" },
+    { id: "can", label: "CAN bus", note: "commands + telemetry", kind: "data" },
+  ]}
+  edges={[
+    ["enc", "mcu"],
+    ["can", "mcu"],
+    ["mcu", "drv"],
+    ["drv", "motor"],
+  ]}
+  title="Motor controller: Hall sensors and CAN commands feed the STM32, which drives the motor through a gate driver."
+/>
+
 ```c title="pid.c"
 float pid_step(pid_t *p, float setpoint, float measured) {
     float err = setpoint - measured;
@@ -40,6 +60,23 @@ float pid_step(pid_t *p, float setpoint, float measured) {
     return clamp(out, p->min, p->max);
 }
 ```
+
+## The board
+
+<Board3D
+  hotspots={[
+    { position: [-0.6, 0.25, 0], label: "STM32F4", note: "Runs the PID loop and FreeRTOS tasks" },
+    {
+      position: [0.9, 0.25, -0.55],
+      label: "Gate driver",
+      note: "Drives the three MOSFET half-bridges",
+    },
+    { position: [0.9, 0.25, 0.55], label: "CAN transceiver", note: "Commands in, telemetry out" },
+    { position: [0, 0.3, 1.15], label: "Debug header", note: "SWD + UART" },
+  ]}
+/>
+
+<Gallery />
 
 ## Result
 

@@ -9,7 +9,9 @@
  *   data-reveal="each"     direct children fade up, each on its own trigger (long prose)
  *   data-scramble          text resolves from binary noise
  *   data-magnetic          pulls toward the cursor within 60px, springs back
- *   data-cursor="view"     custom cursor shows VIEW
+ *   data-cursor="view"     custom cursor shows VIEW ("drag" over 3D models)
+ *   data-count             a number counts up from 0 to its value (case-study metrics)
+ *   data-arch              architecture diagram: boxes appear in order, lines draw in
  *   data-timeline / -line / -item   About timeline: pinned + scrubbed on desktop
  *
  * Everything runs inside `gsap.matchMedia`, keyed on the same queries as `useReducedMotion`, so
@@ -31,7 +33,15 @@ const POINTER_MOTION = `${QUERIES.motionOk} and ${QUERIES.finePointer}`;
 const PIN_DESKTOP = `${QUERIES.desktop} and ${QUERIES.finePointer}`;
 
 const ENTER = "expo.out";
-const FADE_UP = { opacity: 0, y: 16, duration: 0.7, ease: ENTER } as const;
+// clearProps: once revealed, an element carries no inline transform/opacity, so other code that
+// moves it later (Motion's layout animation on project cards, the card tilt) starts clean.
+const FADE_UP = {
+  opacity: 0,
+  y: 16,
+  duration: 0.7,
+  ease: ENTER,
+  clearProps: "transform,opacity",
+} as const;
 const MAGNET_RADIUS = 60;
 const MAGNET_MAX = 14;
 
@@ -205,6 +215,9 @@ export function createMotionEngine(): MotionEngine {
       timeline(pin);
       ScrollTrigger.refresh();
       reveals();
+      const restoreCounters = counters();
+      diagrams();
+      return restoreCounters;
     });
   }
 
@@ -231,6 +244,7 @@ function cursorStateFor(target: EventTarget | null): string {
   )
     return "text";
   if (target.closest("[data-cursor=view]")) return "view";
+  if (target.closest("[data-cursor=drag]")) return "drag";
   if (target.closest("a, button, summary, label, [role=button]")) return "link";
   return "default";
 }
@@ -282,6 +296,71 @@ function reveals() {
       scrambleText: { text: el.textContent ?? "", chars: "01", speed: 0.6, revealDelay: 0.25 },
       scrollTrigger: once(el),
     });
+  }
+}
+
+/**
+ * Case-study metrics (SPEC §6): "1.2 s", "40%", "12k" count up from 0 with the same decimals,
+ * prefix and suffix. Values without a number ("Local GPU") are left as they are. The final
+ * text is in the HTML, so crawlers and reduced-motion visitors always read the real value.
+ */
+function counters(): () => void {
+  const restore: (() => void)[] = [];
+  for (const el of all("[data-count]").filter(belowFold)) {
+    const text = el.textContent ?? "";
+    const match = /^(\D*?)(\d+(?:[.,]\d+)?)(.*)$/.exec(text);
+    if (!match) continue;
+    const [, prefix = "", number = "0", suffix = ""] = match;
+    const decimals = number.split(/[.,]/)[1]?.length ?? 0;
+    const target = Number(number.replace(",", "."));
+    const state = { v: 0 };
+    // Screen readers keep the real value; only the moving digits are hidden from them.
+    const shown = document.createElement("span");
+    shown.setAttribute("aria-hidden", "true");
+    const real = document.createElement("span");
+    real.className = "sr-only";
+    real.textContent = text;
+    shown.textContent = `${prefix}${(0).toFixed(decimals)}${suffix}`;
+    el.replaceChildren(shown, real);
+    restore.push(() => {
+      el.textContent = text;
+    });
+    gsap.to(state, {
+      v: target,
+      duration: 1.4,
+      ease: "power2.out",
+      scrollTrigger: once(el),
+      onUpdate: () => {
+        shown.textContent = `${prefix}${state.v.toFixed(decimals)}${suffix}`;
+      },
+      onComplete: () => {
+        el.textContent = text;
+      },
+    });
+  }
+  return () => restore.forEach((fn) => fn());
+}
+
+/**
+ * Architecture diagrams (SPEC §6): boxes appear one after another, then the connections draw
+ * in and the data packets start flowing. Diagrams already on screen stay as they are.
+ */
+function diagrams() {
+  for (const svg of all<SVGSVGElement>("[data-arch]")) {
+    if (svg.getBoundingClientRect().height === 0 || !belowFold(svg)) continue;
+    const nodes = all<SVGGElement>("[data-arch-node]", svg);
+    const edges = all<SVGPathElement>("[data-arch-edge]", svg);
+    const packets = all<SVGGElement>("[data-arch-packets]", svg);
+    gsap
+      .timeline({ scrollTrigger: once(svg) })
+      .from(nodes, { opacity: 0, y: 10, duration: 0.45, ease: ENTER, stagger: 0.09 })
+      .fromTo(
+        edges,
+        { strokeDasharray: 1, strokeDashoffset: 1 },
+        { strokeDashoffset: 0, duration: 0.6, ease: "power2.out", stagger: 0.06 },
+        "-=0.2",
+      )
+      .from(packets, { opacity: 0, duration: 0.3 });
   }
 }
 

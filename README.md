@@ -25,6 +25,21 @@ UI text (buttons, labels) is in `lib/i18n/en.ts`.
 2. Put its media in `public/projects/<slug>/` (at least `cover.webp`, 16:10).
 3. Run `pnpm build`. The card and the case-study page appear automatically.
 
+### Blocks you can use in a project's MDX
+
+| Block                            | Example                                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Architecture diagram             | `<Architecture nodes={[{ id: "a", label: "ESP32", note: "sensor node", kind: "hw" }]} edges={[["a", "b"]]} />` |
+| Gallery (frontmatter `gallery`)  | `<Gallery />`                                                                                                  |
+| Video (file or YouTube ID)       | `<Video src="demo.mp4" captions="demo.vtt" />`                                                                 |
+| Code with a file tab             | a fenced block: ` ```c title="pid.c" `                                                                         |
+| Before / after                   | `<Compare before="raw.webp" after="clean.webp" />`                                                             |
+| 3D board (frontmatter `model3d`) | `<Board3D hotspots={[{ position: [0, 0.3, 0], label: "MCU" }]} />`                                             |
+| Interactive demo                 | `<Demo name="reply-twin" />` (or `demo:` in the frontmatter)                                                   |
+| Note                             | `<Callout>…</Callout>`                                                                                         |
+
+File names are relative to `public/projects/<slug>/`.
+
 ### Animations
 
 Motion is declared with data attributes on ordinary markup; `lib/motion/engine.ts` does the rest

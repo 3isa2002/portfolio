@@ -33,6 +33,31 @@ I wanted to see temperature and humidity in every room and switch a fan remotely
 Battery-powered ESP32 nodes wake every 10 seconds, read their sensors and publish to a local MQTT broker.
 A dashboard subscribes to the topics and can toggle a relay node.
 
+<Architecture
+  nodes={[
+    { id: "n1", label: "ESP32 node ×4", note: "SHT31 sensor", kind: "hw" },
+    { id: "broker", label: "MQTT broker", note: "Mosquitto", kind: "data" },
+    { id: "red", label: "Node-RED", note: "flows + storage", kind: "data" },
+    { id: "dash", label: "Dashboard", note: "any device", kind: "data" },
+    { id: "relay", label: "Relay node", note: "fan control", kind: "hw" },
+  ]}
+  edges={[
+    ["n1", "broker"],
+    ["broker", "red"],
+    ["red", "dash"],
+    ["red", "relay"],
+  ]}
+  title="Sensor hub: ESP32 nodes publish to an MQTT broker; Node-RED stores readings, serves the dashboard and switches the relay."
+/>
+
+Calibration made the biggest difference. Drag the slider to compare a day of raw and calibrated readings:
+
+<Compare
+  before="before.webp"
+  after="after.webp"
+  alt="A day of humidity readings, raw versus calibrated"
+/>
+
 ```cpp title="node.ino"
 void loop() {
   float t = sensor.readTemperature();

@@ -115,7 +115,7 @@ function useSceneInputs(interactive: boolean): RefObject<Inputs> {
         ? MathUtils.clamp((y - span.start) / Math.max(1, span.end - span.start), 0, 1)
         : routeMorph;
       // Full strength only behind the home hero; dimmer behind content everywhere else.
-      const hero = span ? 1 - 0.45 * MathUtils.clamp(y / (vh * 0.8), 0, 1) : 0.55;
+      const hero = span ? 1 - 0.45 * MathUtils.clamp(y / (vh * 0.8), 0, 1) : 0.38;
       inputs.current.intensity = hero;
     };
     let timer: number | undefined;
