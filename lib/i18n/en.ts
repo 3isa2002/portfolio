@@ -190,6 +190,7 @@ export const en = {
     ],
     ok: "OK",
     skip: "Skip intro",
+    soundHint: "Click anywhere for sound",
   },
   notFound: {
     title: "Signal lost",

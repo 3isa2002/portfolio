@@ -99,6 +99,12 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   `robots.ts` and the OG routes need `dynamic = "force-static"` under `output: 'export'`.
 - **Sound** is synthesized with Web Audio (`lib/sound.ts`): no audio files, no Howler. On by default
   (decided 2026-11-09); browsers allow audio only after the first click/tap/key, so it starts then.
+- **Intro score and background ambience** (requested 2026-11-09): `lib/audio-engine.ts` (lazy, ~2 KB
+  gz) synthesizes a score synced to the intro scenes and a dark breathing pad with sparse echoing notes
+  whose filter opens with scroll; muted in hidden tabs, stopped by the sound toggle. Audio can only start
+  after a first click/tap/key, so while it is blocked the first click on the intro turns sound on (hint
+  shown) instead of skipping, and the score joins from that point; Skip button, Esc, wheel or a second
+  click skip as before.
 - **Boot intro on every home visit** (decided 2026-11-09, replaces SPEC §4 "first visit only" and the
   600 ms return version): every page load of `/` and every client-side navigation back to it (links,
   browser Back) plays the full intro; reduced motion never does. Skip reacts only to visitor input
