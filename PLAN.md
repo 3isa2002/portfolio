@@ -97,7 +97,12 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   Fonts during the build (falls back to the built-in font). Static export writes them without an
   extension, so `public/_headers` sets `Content-Type: image/png` on Cloudflare. `sitemap.ts`,
   `robots.ts` and the OG routes need `dynamic = "force-static"` under `output: 'export'`.
-- **Sound** is synthesized with Web Audio (`lib/sound.ts`): no audio files, no Howler. Off by default.
+- **Sound** is synthesized with Web Audio (`lib/sound.ts`): no audio files, no Howler. On by default
+  (decided 2026-11-09); browsers allow audio only after the first click/tap/key, so it starts then.
+- **Boot intro on every home visit** (decided 2026-11-09, replaces SPEC §4 "first visit only" and the
+  600 ms return version): every page load of `/` and every client-side navigation back to it (links,
+  browser Back) plays the full intro; reduced motion never does. Skip reacts only to visitor input
+  (click, wheel, touch, key), not `scroll`, which also fires on Back's scroll restoration.
 - **Decisions (2026-11-09):** Cloudflare Web Analytics enabled from the Pages dashboard (no code);
   "Ask my AI" skipped for now.
 - **LCP in CI is a warning (decided 2026-11-09):** Lighthouse CI simulates Slow 4G, stricter than the

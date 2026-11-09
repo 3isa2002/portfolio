@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { site } from "@/content/site";
+import { useLayoutEffect, useRef } from "react";
 import { t } from "@/lib/i18n";
+import { prefersReducedMotion } from "@/lib/motion/media";
 import { INTRO_DONE, INTRO_START } from "@/lib/motion/wake";
 import { play } from "@/lib/sound";
 import { chipGeometry } from "./chip-geometry";
 import { nameScramble } from "./name-canvas";
 
 const geometry = chipGeometry();
-const NAME = site.name.toUpperCase();
 const VIOLET = "#8b5cf6";
 
 /**
@@ -21,43 +20,43 @@ const VIOLET = "#8b5cf6";
  *
  * The real hero is server-rendered underneath and never hidden (its name is the LCP element).
  * The name scrambles on a canvas laid exactly over it (a canvas is never an LCP candidate), then
- * the overlay fades and the real one is there. Skip (button, click, scroll, key) finishes in 300 ms. `IntroScript` picks the mode
- * before first paint; this component only runs the timeline. GSAP is imported on demand.
+ * the overlay fades and the real one is there. Skip (button, click, wheel, touch, key) finishes
+ * in 300 ms. GSAP is imported on demand.
+ *
+ * It plays on every visit to the home page (Mohamed's decision, 2026-11-09, replacing SPEC §4's
+ * "first visit only"): on a full page load `IntroScript` turns it on before first paint; on a
+ * client-side navigation back to the home page (a link or the Back button) this component turns
+ * it on itself, in a layout effect, so the page never shows before the overlay.
+ * With reduced motion it never plays.
  */
 export function BootIntro() {
   const root = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const html = document.documentElement;
-    const mode = html.dataset.intro;
+    // "full" here means IntroScript set it during this page load; anything else ("done" from an
+    // earlier play, or nothing) means we arrived through a client-side navigation.
+    const fromPageLoad = html.dataset.intro === "full";
+    if (!fromPageLoad) {
+      if (html.dataset.intro === "calm" || prefersReducedMotion()) return;
+      html.dataset.intro = "full"; // before paint: the overlay covers the page from the start
+    }
     let disposed = false;
     let cleanup = () => {};
 
-    if (mode !== "full" && mode !== "short") {
-      // calm, or a client-side navigation to the home page: nothing to play.
-      if (mode !== "calm") html.dataset.intro = "done";
-      return;
-    }
-    // Only the full intro hands off: the 3D scene and the motion engine wake when it ends.
     const done = () => {
       html.dataset.intro = "done";
-      if (mode === "full") window.dispatchEvent(new Event(INTRO_DONE));
+      window.dispatchEvent(new Event(INTRO_DONE));
     };
     // GSAP loads only after the first paint: the black screen and caret are plain CSS, and the
     // hero underneath must paint (it is the LCP element) before any intro work starts.
     const cancelWait = afterFirstPaint(() => {
-      if (mode === "full") window.dispatchEvent(new Event(INTRO_START));
+      window.dispatchEvent(new Event(INTRO_START));
+      play("hum"); // heard when sound is on and the visitor has interacted with the page
       void import("gsap")
-        .then(async ({ gsap }) => {
+        .then(({ gsap }) => {
           if (disposed) return;
-          if (mode === "full") {
-            cleanup = playFull(gsap, root.current, done);
-            return;
-          }
-          const { ScrambleTextPlugin } = await import("gsap/ScrambleTextPlugin");
-          if (disposed) return;
-          gsap.registerPlugin(ScrambleTextPlugin);
-          cleanup = playShort(gsap, done);
+          cleanup = playFull(gsap, root.current, done, fromPageLoad);
         })
         .catch(done);
     });
@@ -66,6 +65,8 @@ export function BootIntro() {
       disposed = true;
       cancelWait();
       cleanup();
+      // Left the page mid-intro: the next visit must start fresh, not as a "page load".
+      if (html.dataset.intro === "full") html.dataset.intro = "done";
     };
   }, []);
 
@@ -159,7 +160,13 @@ function afterFirstPaint(callback: () => void): () => void {
   };
 }
 
-function playFull(gsap: Gsap, root: HTMLElement | null, done: () => void): () => void {
+function playFull(
+  gsap: Gsap,
+  root: HTMLElement | null,
+  done: () => void,
+  /** On a page load the black screen has been showing since first paint: catch up to it. */
+  catchUp: boolean,
+): () => void {
   if (!root) {
     done();
     return () => {};
@@ -274,17 +281,19 @@ function playFull(gsap: Gsap, root: HTMLElement | null, done: () => void): () =>
   // paint. On a slow download the first log lines simply appear already typed (capped at 0.6 s,
   // so the log is always seen).
   const painted = performance.getEntriesByName("first-contentful-paint")[0]?.startTime;
-  if (painted !== undefined)
+  if (catchUp && painted !== undefined)
     tl.time(Math.min(0.6, Math.max(0, (performance.now() - painted) / 1000)));
 
-  // Skip: any click, scroll, wheel or key jumps to the final state in 300 ms.
+  // Skip: any click, wheel, touch or key jumps to the final state in 300 ms.
   const skip = () => {
     if (finished) return;
     removeSkip();
     tl.kill();
     gsap.to(root, { opacity: 0, duration: 0.3, ease: "power2.out", onComplete: finish });
   };
-  const events = ["pointerdown", "wheel", "touchstart", "keydown", "scroll"] as const;
+  // Only things the visitor does: a `scroll` event also fires when the browser restores the
+  // scroll position on Back, which would skip the intro before it is seen.
+  const events = ["pointerdown", "wheel", "touchstart", "keydown"] as const;
   const opts = { capture: true, passive: true } as const;
   function removeSkip() {
     for (const type of events) window.removeEventListener(type, skip, opts);
@@ -294,24 +303,5 @@ function playFull(gsap: Gsap, root: HTMLElement | null, done: () => void): () =>
   return () => {
     removeSkip();
     tl.kill();
-  };
-}
-
-/** Return visits (600 ms): the hero name scrambles into place. */
-function playShort(gsap: Gsap, done: () => void): () => void {
-  const target = document.querySelector<HTMLElement>("#hero-title > span");
-  if (!target) {
-    done();
-    return () => {};
-  }
-  play("hum"); // only if the visitor turned sound on earlier (and the browser allows audio)
-  const tween = gsap.to(target, {
-    duration: 0.6,
-    scrambleText: { text: NAME, chars: "upperCase", speed: 1 },
-    onComplete: done,
-  });
-  return () => {
-    tween.kill();
-    target.textContent = NAME;
   };
 }
