@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { BackTransitions } from "@/components/motion/BackTransitions";
+import { Konami } from "@/components/motion/Konami";
 import { MotionRoot } from "@/components/motion/MotionRoot";
 import { BackgroundLayer } from "@/components/three/BackgroundLayer";
 import { site } from "@/content/site";
@@ -41,6 +42,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: { default: t.meta.title, template: `%s · ${site.name}` },
   description: t.meta.description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    title: t.meta.title,
+    description: t.meta.description,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
@@ -72,6 +83,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Footer />
         <MotionRoot />
         <BackTransitions />
+        <Konami />
+        {/* Swept across the screen by the page transition (see .scanline in globals.css). */}
+        <div aria-hidden className="scanline" />
       </body>
     </html>
   );

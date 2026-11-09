@@ -3,14 +3,12 @@ import { CopyEmail } from "@/components/ui/CopyEmail";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/icons";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { site } from "@/content/site";
+import { Terminal } from "./Terminal";
 import { t } from "@/lib/i18n";
 
-/** The commands the Phase 6 interactive terminal will accept. Shown as static `help` output for now. */
-const commands = Object.entries(t.contact.commands);
-
 /**
- * Section 6 — Contact (SPEC §5.6). Phase 1: a static terminal panel + plain buttons.
- * Phase 6 makes the terminal interactive (typing, history, tab completion).
+ * Section 6 — Contact (SPEC §5.6): an interactive terminal (commands, history, tab completion)
+ * beside plain buttons that do the same things for non-technical visitors.
  */
 export function Contact() {
   const external = { target: "_blank", rel: "noreferrer" } as const;
@@ -32,22 +30,7 @@ export function Contact() {
               <span aria-hidden className="size-2.5 rounded-full bg-white/15" />
               <span className="ms-2 font-mono text-xs text-dim">{t.contact.terminalTitle}</span>
             </div>
-            <div className="p-5 font-mono text-sm leading-7 sm:p-6">
-              <p>
-                <span className="text-ok">$</span> help
-              </p>
-              <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-6 text-dim">
-                {commands.map(([cmd, desc]) => (
-                  <div key={cmd} className="contents">
-                    <dt className="text-cyan">{cmd}</dt>
-                    <dd>{desc}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-2">
-                <span className="text-ok">$</span> <span className="caret" aria-hidden />
-              </p>
-            </div>
+            <Terminal />
           </div>
 
           <div className="flex flex-col gap-6 lg:col-span-5">

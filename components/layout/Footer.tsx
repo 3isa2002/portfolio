@@ -1,5 +1,6 @@
 import { Mail } from "lucide-react";
 import { site } from "@/content/site";
+import { PaletteHint } from "@/components/palette/PaletteHint";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/icons";
 import { t } from "@/lib/i18n";
 
@@ -18,7 +19,7 @@ export function Footer() {
       <div className="container-site flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-mono text-xs text-dim">
           {t.footer.builtBy} {site.name} · {site.location.split(",")[0]} · {t.footer.lastDeploy}{" "}
-          <time dateTime={buildDate}>{buildDate}</time>
+          <time dateTime={buildDate}>{buildDate}</time> · <PaletteHint />
         </p>
         <ul aria-label={t.a11y.social} className="-ms-3 flex items-center gap-1 sm:ms-0 sm:-me-3">
           {socials.map((s) => (

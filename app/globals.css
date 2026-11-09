@@ -313,6 +313,57 @@ html[data-intro="calm"] #hero {
     transform: translateY(16px);
   }
 }
+/*
+ * Scanline page transition (SPEC §7): for ordinary route changes a cyan line sweeps down while
+ * the new page is revealed behind it (500ms). Card ↔ case-study navigations (typed nav-forward /
+ * nav-back) keep the cover morph and a plain crossfade instead.
+ */
+.scanline {
+  position: fixed;
+  inset-inline: 0;
+  top: -4px;
+  z-index: 75;
+  block-size: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--cyan) 20%, var(--violet) 80%, transparent);
+  box-shadow: 0 0 14px 1px var(--cyan);
+  view-transition-name: scanline;
+}
+::view-transition-group(scanline) {
+  animation: scanline-sweep 500ms var(--ease-in-out) both;
+}
+::view-transition-old(root) {
+  animation: none;
+}
+::view-transition-new(root) {
+  animation: scanline-wipe 500ms var(--ease-in-out) both;
+}
+@keyframes scanline-sweep {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(100vh + 8px));
+  }
+}
+@keyframes scanline-wipe {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+html:active-view-transition-type(nav-forward, nav-back)::view-transition-group(scanline) {
+  animation: none;
+}
+html:active-view-transition-type(nav-forward, nav-back)::view-transition-old(root) {
+  animation: 250ms ease-out both vt-fade reverse;
+}
+html:active-view-transition-type(nav-forward, nav-back)::view-transition-new(root) {
+  animation: 250ms ease-out both vt-fade;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Crossfade only: nothing travels, nothing rises. */
   ::view-transition-group(*) {
@@ -327,6 +378,120 @@ html[data-intro="calm"] #hero {
   ::view-transition-new(.cs-rise-late) {
     animation: 200ms ease-out both vt-fade !important;
   }
+  ::view-transition-new(root) {
+    animation: 200ms ease-out both vt-fade !important;
+  }
+}
+
+/* Navbar tools (palette, sound) and the command palette (cmdk). */
+.nav-tool {
+  display: inline-flex;
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding-inline: 0.6rem;
+  color: var(--text);
+}
+.nav-tool:hover {
+  background: var(--bg-elev-2);
+}
+.palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(4px);
+}
+.palette {
+  position: fixed;
+  top: 14vh;
+  left: 50%;
+  z-index: 96;
+  inline-size: min(640px, calc(100vw - 32px));
+  translate: -50% 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-elev);
+  box-shadow:
+    0 30px 80px rgb(0 0 0 / 0.6),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 10%, transparent);
+}
+.palette-input {
+  inline-size: 100%;
+  border-block-end: 1px solid var(--border);
+  background: transparent;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  color: var(--text);
+  outline: none;
+}
+.palette-input::placeholder {
+  color: var(--text-dim);
+}
+.palette-list {
+  max-block-size: min(420px, 55vh);
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+.palette-list [cmdk-group-heading] {
+  padding: 0.6rem 0.75rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.palette-list [cmdk-item] {
+  display: flex;
+  min-block-size: 44px;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 10px;
+  padding-inline: 0.75rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.palette-list [cmdk-item][data-selected="true"] {
+  background: var(--bg-elev-2);
+  box-shadow: inset 2px 0 0 var(--cyan);
+}
+.palette-meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.palette-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.palette-foot {
+  border-block-start: 1px solid var(--border);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.palette-foot kbd {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 0.3rem;
+}
+
+/* Konami "overclock mode": binary rain over the background, under the content. */
+.matrix-rain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+  opacity: 0.55; /* an easter egg, not a reason to make the text hard to read */
 }
 
 /* Faint grid + noise overlay for depth (SPEC §3: 2–3% opacity). Pure CSS, no image request. */
