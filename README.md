@@ -35,7 +35,7 @@ UI text (buttons, labels) is in `lib/i18n/en.ts`.
 | Code with a file tab             | a fenced block: ` ```c title="pid.c" `                                                                         |
 | Before / after                   | `<Compare before="raw.webp" after="clean.webp" />`                                                             |
 | 3D board (frontmatter `model3d`) | `<Board3D hotspots={[{ position: [0, 0.3, 0], label: "MCU" }]} />`                                             |
-| Interactive demo                 | `<Demo name="reply-twin" />` (or `demo:` in the frontmatter)                                                   |
+| Interactive demo                 | `<Demo name="iot-dashboard" />` (or `demo:` in the frontmatter)                                                |
 | Note                             | `<Callout>…</Callout>`                                                                                         |
 
 File names are relative to `public/projects/<slug>/`.

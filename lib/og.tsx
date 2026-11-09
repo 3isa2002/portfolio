@@ -59,7 +59,7 @@ type OgOptions = {
   eyebrow: string;
   title: string;
   subtitle: string;
-  /** Path under public/, e.g. /projects/reply-twin/cover.webp. */
+  /** Path under public/, e.g. /projects/wanas/cover.webp. */
   cover?: string;
   accent?: "cyan" | "violet";
   footer: string;

@@ -1,0 +1,53 @@
+---
+# From the CVs (2026-11-09). TODO(mohamed): add sample (redacted) screenshots to `gallery` if you can.
+title: "Arabic ID OCR Pipeline"
+slug: "arabic-ocr"
+summary: "Reads scanned Egyptian national ID cards in Arabic, validates every field and stores clean records"
+category: ["AI"]
+featured: true
+order: 2
+year: 2024
+status: "shipped"
+role: "OCR & data-extraction module — graduation project team"
+stack: ["Python", "Tesseract OCR", "OpenCV", "MySQL"]
+cover: "cover.webp"
+links:
+  github: ""
+  live: ""
+  video: ""
+---
+
+## Problem
+
+My graduation project, MAVS, was a multi-modal authentication and verification system. It needed
+reliable personal data from scanned Egyptian national ID cards: Arabic script, varied scan quality,
+and no room for a wrong field ending up in the database.
+
+## Approach
+
+I built the OCR and data-extraction module end to end: image pre-processing, Arabic-script field
+recognition, parsing into structured records, rule-based validation, and persistence to MySQL.
+
+<Architecture
+  nodes={[
+    { id: "scan", label: "Scanned ID card", note: "image", kind: "data" },
+    { id: "pre", label: "Pre-processing", note: "OpenCV", kind: "ai" },
+    { id: "ocr", label: "Arabic OCR", note: "Tesseract", kind: "ai" },
+    { id: "parse", label: "Field parser", note: "structured record", kind: "ai" },
+    { id: "check", label: "Validation", note: "rule-based", kind: "ai" },
+    { id: "db", label: "MySQL", note: "clean records", kind: "data" },
+  ]}
+  edges={[
+    ["scan", "pre"],
+    ["pre", "ocr"],
+    ["ocr", "parse"],
+    ["parse", "check"],
+    ["check", "db"],
+  ]}
+  title="OCR pipeline: a scanned ID card is pre-processed with OpenCV, read with Tesseract, parsed into fields, validated, then stored in MySQL."
+/>
+
+## Result
+
+Extracted fields were tested against the source images, and failure cases such as low-quality scans
+and partially readable fields were handled before anything reached storage.

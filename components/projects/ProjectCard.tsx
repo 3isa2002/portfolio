@@ -34,8 +34,9 @@ export function ProjectCard({ project, wide, headingLevel = 3 }: ProjectCardProp
   const card = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const reduced = useReducedMotion();
-  const glow =
-    accentFor(project.category[0] ?? "AI") === "violet" ? "var(--violet)" : "var(--cyan)";
+  const glow = { violet: "var(--violet)", cyan: "var(--cyan)", neutral: "#cbd5e1" }[
+    accentFor(project.category[0] ?? "AI")
+  ];
   const hasPreview = Boolean(project.previewSrc) && !reduced;
 
   // Touch: play the preview while the card is 60% visible.

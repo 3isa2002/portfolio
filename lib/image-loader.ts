@@ -2,8 +2,8 @@ import widths from "./image-widths.json";
 
 /**
  * Custom next/image loader for the static export.
- * Maps a local image (e.g. /projects/reply-twin/cover.webp) to the pre-generated file from
- * scripts/optimize-images.ts (e.g. /_img/projects/reply-twin/cover-960.webp).
+ * Maps a local image (e.g. /projects/wanas/cover.webp) to the pre-generated file from
+ * scripts/optimize-images.ts (e.g. /_img/projects/wanas/cover-960.webp).
  * Remote URLs (R2, etc.) are passed through unchanged.
  */
 

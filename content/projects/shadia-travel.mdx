@@ -1,0 +1,66 @@
+---
+# From the CVs (2026-11-09). TODO(mohamed): add the live URL (links.live) and screenshots (gallery)
+# if the client agrees to show them.
+title: "Shadia Travel"
+slug: "shadia-travel"
+summary: "A tourism booking platform — mobile app, admin dashboard and web portal — delivered to production"
+category: ["Web"]
+featured: true
+order: 3
+year: 2026
+status: "shipped"
+role: "Freelance — from client requirements to production"
+stack:
+  [
+    "Flutter",
+    "Riverpod",
+    "Next.js",
+    "TypeScript",
+    "Tailwind CSS",
+    "Supabase",
+    "PostgreSQL",
+    "Paymob",
+    "Vercel",
+  ]
+cover: "cover.webp"
+links:
+  github: ""
+  live: ""
+  video: ""
+metrics:
+  - { label: "Apps, one monorepo", value: "3" }
+---
+
+## Problem
+
+A tourism client needed customers to browse and book trips and pay online, and staff to manage it
+all, on mobile and on the web.
+
+## Approach
+
+I gathered the requirements with the client and owned the product end to end: a Flutter mobile
+client, an admin dashboard and a public web portal in one monorepo, with booking and online payment
+flows (Paymob) on a Supabase/PostgreSQL backend secured with row-level security, deployed on Vercel.
+
+<Architecture
+  nodes={[
+    { id: "app", label: "Mobile app", note: "Flutter + Riverpod", kind: "data" },
+    { id: "web", label: "Web portal", note: "Next.js", kind: "data" },
+    { id: "admin", label: "Admin dashboard", note: "Next.js", kind: "data" },
+    { id: "db", label: "Supabase", note: "PostgreSQL + RLS", kind: "data" },
+    { id: "pay", label: "Paymob", note: "online payments", kind: "data" },
+  ]}
+  edges={[
+    ["app", "db"],
+    ["web", "db"],
+    ["admin", "db"],
+    ["app", "pay"],
+    ["web", "pay"],
+  ]}
+  title="Shadia Travel: the mobile app, web portal and admin dashboard share a Supabase PostgreSQL backend with row-level security; bookings are paid through Paymob."
+/>
+
+## Result
+
+The platform is in production for the client: bookings and online payments run end to end, and
+customer data is protected by row-level security in the database.

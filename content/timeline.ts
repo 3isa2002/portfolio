@@ -1,6 +1,6 @@
 /**
- * About timeline: from the first microcontroller to the first LLM project (SPEC §5.2).
- * TODO(mohamed): replace all 5 milestones with your real ones (4–6 total).
+ * About timeline: from networks and microcontrollers to LLMs on real devices (SPEC §5.2).
+ * From Mohamed's CVs (2026-11-09).
  */
 
 export type Milestone = {
@@ -13,33 +13,33 @@ export type Milestone = {
 
 export const timeline: Milestone[] = [
   {
-    year: "2019",
-    title: "First microcontroller",
-    text: "Blinked an LED on an Arduino Uno and never stopped.",
+    year: "2020",
+    title: "Computer Science at FUE",
+    text: "Future University in Egypt, affiliated with the University of Cincinnati.",
     side: "hardware",
   },
   {
     year: "2021",
-    title: "Firmware on STM32",
-    text: "Moved from sketches to bare-metal C, timers and interrupts.",
-    side: "hardware",
-  },
-  {
-    year: "2023",
-    title: "Connected devices",
-    text: "ESP32 nodes talking MQTT to a home dashboard.",
+    title: "First network internship",
+    text: "Connectivity and troubleshooting at Misr Phosphate; topologies in Packet Tracer.",
     side: "hardware",
   },
   {
     year: "2024",
-    title: "Machine learning",
-    text: "First PyTorch models, then deep learning on real data.",
+    title: "Arabic OCR, graduated",
+    text: "Built the OCR module that reads and validates Egyptian ID cards; CCNA: Intro to Networks.",
     side: "ai",
   },
   {
+    year: "2025",
+    title: "Systems Branch",
+    text: "Military service: a digital archive replacing a paper process, and the branch network.",
+    side: "hardware",
+  },
+  {
     year: "2026",
-    title: "First LLM project",
-    text: "A local RAG system that writes in my own style.",
+    title: "Wanas & production work",
+    text: "An ESP32-S3 desk assistant driven by Gemini, and a client platform shipped to production.",
     side: "ai",
   },
 ];
