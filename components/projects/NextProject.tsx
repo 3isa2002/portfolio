@@ -9,6 +9,8 @@ export function NextProject({ project }: { project: Project }) {
   return (
     <Link
       href={project.url}
+      data-cursor="view"
+      data-reveal="up"
       className="group card grid overflow-hidden transition-colors hover:border-white/15 md:grid-cols-2"
     >
       <div className="flex flex-col justify-center gap-3 p-6 sm:p-10">

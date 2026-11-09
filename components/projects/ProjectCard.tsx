@@ -21,6 +21,7 @@ export function ProjectCard({ project, wide, headingLevel = 3 }: ProjectCardProp
   const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
     <article
+      data-cursor="view"
       className={`group card relative flex h-full flex-col overflow-hidden transition-colors duration-200 hover:border-white/15 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-cyan ${
         wide ? "lg:flex-row" : ""
       }`}

@@ -24,7 +24,7 @@ export function Contact() {
           id="contact-title"
         />
 
-        <div className="grid gap-8 lg:grid-cols-12">
+        <div className="grid gap-8 lg:grid-cols-12" data-reveal="stagger">
           <div className="card overflow-hidden lg:col-span-7">
             <div className="flex items-center gap-2 border-b border-line px-4 py-3">
               <span aria-hidden className="size-2.5 rounded-full bg-white/15" />
@@ -53,7 +53,7 @@ export function Contact() {
           <div className="flex flex-col gap-6 lg:col-span-5">
             <p className="text-lg text-dim">{t.contact.intro}</p>
             <div className="flex flex-wrap gap-3">
-              <a href={`mailto:${site.email}`} className="btn btn-primary">
+              <a href={`mailto:${site.email}`} className="btn btn-primary" data-magnetic>
                 <Mail size={16} aria-hidden />
                 {t.contact.email}
               </a>

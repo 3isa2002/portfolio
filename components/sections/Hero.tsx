@@ -1,16 +1,17 @@
 import { CvMenu } from "@/components/ui/CvMenu";
 import { site } from "@/content/site";
+import { TypedLines } from "./TypedLines";
 import { t } from "@/lib/i18n";
 
 /**
  * Section 1 — Hero (SPEC §5.1).
- * Phase 1: static. Phase 2 adds the typed/deleted line loop; Phase 3 the 3D network behind it;
- * Phase 4 the name scramble from the boot intro.
+ * The name and first line are in the static HTML (LCP) and never hidden by an entrance.
+ * Phase 3 adds the 3D network behind it; Phase 4 the name scramble from the boot intro.
  */
 export function Hero() {
-  const [firstLine] = site.heroLines;
   return (
     <section
+      id="hero"
       aria-labelledby="hero-title"
       // Top-anchored (not vertically centered): when the body font swaps in, a change in the
       // paragraph's line count must not move the name above it (CLS < 0.05, SPEC §8).
@@ -30,9 +31,7 @@ export function Hero() {
         <span aria-hidden className="text-cyan">
           &gt;{" "}
         </span>
-        <span aria-hidden className="caret">
-          {firstLine}
-        </span>
+        <TypedLines lines={site.heroLines} />
       </p>
 
       <p className="mt-4 max-w-xl text-dim">
@@ -40,7 +39,7 @@ export function Hero() {
       </p>
 
       <div className="mt-10 flex flex-wrap items-center gap-3">
-        <a href="#projects" className="btn btn-primary">
+        <a href="#projects" className="btn btn-primary" data-magnetic>
           {t.hero.viewProjects}
         </a>
         <CvMenu />
@@ -51,7 +50,10 @@ export function Hero() {
         className="label absolute bottom-8 start-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-dim hover:text-text rtl:translate-x-1/2"
       >
         {t.hero.scrollCue}
-        <span aria-hidden className="h-10 w-px bg-gradient-to-b from-cyan to-transparent" />
+        <span
+          aria-hidden
+          className="signal-line h-10 w-px bg-gradient-to-b from-cyan/50 to-transparent"
+        />
       </a>
     </section>
   );

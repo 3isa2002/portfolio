@@ -25,6 +25,21 @@ UI text (buttons, labels) is in `lib/i18n/en.ts`.
 2. Put its media in `public/projects/<slug>/` (at least `cover.webp`, 16:10).
 3. Run `pnpm build`. The card and the case-study page appear automatically.
 
+### Animations
+
+Motion is declared with data attributes on ordinary markup; `lib/motion/engine.ts` does the rest
+(and skips it all when the visitor prefers reduced motion):
+
+| Attribute               | Effect                                           |
+| ----------------------- | ------------------------------------------------ |
+| `data-reveal="split"`   | Heading lines slide up from a mask               |
+| `data-reveal="up"`      | Fade up 16px when scrolled into view             |
+| `data-reveal="stagger"` | Direct children fade up one after another        |
+| `data-reveal="each"`    | Each direct child reveals on its own (long text) |
+| `data-scramble`         | Text resolves from binary noise                  |
+| `data-magnetic`         | Button pulls toward the mouse                    |
+| `data-cursor="view"`    | Custom cursor shows `VIEW`                       |
+
 ## Local development
 
 Requires Node 22+ and pnpm (`corepack enable`).
