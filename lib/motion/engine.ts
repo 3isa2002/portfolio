@@ -22,6 +22,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import Lenis from "lenis";
 import { QUERIES } from "./media";
+import { whenIdle } from "./wake";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 ScrollTrigger.config({ ignoreMobileResize: true });
@@ -210,7 +211,7 @@ export function createMotionEngine(): MotionEngine {
   return {
     // After the new route's DOM and Next's scroll reset are in place, and in its own idle task
     // so start-up work does not stack into one long main-thread task.
-    scan: () => whenIdle(scanNow),
+    scan: () => void whenIdle(scanNow, 500),
     destroy: () => {
       document.removeEventListener("click", onClick, { capture: true });
       observer.disconnect();
@@ -219,11 +220,6 @@ export function createMotionEngine(): MotionEngine {
       persistent.revert();
     },
   };
-}
-
-function whenIdle(fn: () => void) {
-  if ("requestIdleCallback" in window) window.requestIdleCallback(fn, { timeout: 500 });
-  else setTimeout(fn, 50);
 }
 
 function cursorStateFor(target: EventTarget | null): string {
