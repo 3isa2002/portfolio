@@ -106,6 +106,17 @@ export const en = {
     lastDeploy: "last deploy",
     hint: "try",
   },
+  /** Boot intro (SPEC §4). `ok` lines end in a green OK. */
+  intro: {
+    lines: [
+      { text: "init core ........", ok: true },
+      { text: "mounting sensors ..", ok: true },
+      { text: "loading neural weights ..", ok: true },
+      { text: "mohamed.eissa v2026 ready", ok: false },
+    ],
+    ok: "OK",
+    skip: "Skip intro",
+  },
   notFound: {
     title: "Signal lost",
     line: "> error 404: signal lost",

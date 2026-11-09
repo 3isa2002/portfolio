@@ -13,11 +13,21 @@ const WAKE_EVENTS = [
   "keydown",
 ] as const;
 
-export function onFirstInteraction(callback: () => void, fallbackMs = 4000): () => void {
+/** Window events fired by the boot intro (components/intro/BootIntro.tsx). */
+export const INTRO_START = "intro:start";
+export const INTRO_DONE = "intro:done";
+
+export function onFirstInteraction(
+  callback: () => void,
+  fallbackMs = 4000,
+  /** Extra window events that also count as "wake up", e.g. the end of the boot intro. */
+  extraEvents: readonly string[] = [],
+): () => void {
   let done = false;
   const opts = { passive: true, capture: true } as const;
+  const events = [...WAKE_EVENTS, ...extraEvents];
   const stop = () => {
-    for (const type of WAKE_EVENTS) window.removeEventListener(type, fire, opts);
+    for (const type of events) window.removeEventListener(type, fire, opts);
     window.clearTimeout(timer);
   };
   function fire() {
@@ -26,7 +36,7 @@ export function onFirstInteraction(callback: () => void, fallbackMs = 4000): () 
     stop();
     callback();
   }
-  for (const type of WAKE_EVENTS) window.addEventListener(type, fire, opts);
+  for (const type of events) window.addEventListener(type, fire, opts);
   const timer = window.setTimeout(fire, fallbackMs);
   return () => {
     done = true;

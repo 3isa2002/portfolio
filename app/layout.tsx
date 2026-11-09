@@ -50,6 +50,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
+      // IntroScript (home page) sets data-intro before React hydrates.
+      suppressHydrationWarning
       lang="en"
       dir="ltr"
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
