@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { site } from "@/content/site";
 import { t } from "@/lib/i18n";
 import { INTRO_DONE, INTRO_START } from "@/lib/motion/wake";
+import { play } from "@/lib/sound";
 import { chipGeometry } from "./chip-geometry";
 import { nameScramble } from "./name-canvas";
 
@@ -303,6 +304,7 @@ function playShort(gsap: Gsap, done: () => void): () => void {
     done();
     return () => {};
   }
+  play("hum"); // only if the visitor turned sound on earlier (and the browser allows audio)
   const tween = gsap.to(target, {
     duration: 0.6,
     scrambleText: { text: NAME, chars: "upperCase", speed: 1 },

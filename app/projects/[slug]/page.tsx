@@ -11,6 +11,7 @@ import { MDXContent } from "@/components/mdx/MDXContent";
 import { Video } from "@/components/mdx/Video";
 import { CategoryBadge } from "@/components/projects/CategoryBadge";
 import { NextProject } from "@/components/projects/NextProject";
+import { JsonLd, projectSchema } from "@/components/seo/JsonLd";
 import { GitHubIcon } from "@/components/ui/icons";
 import { Picture } from "@/components/ui/Picture";
 import { t } from "@/lib/i18n";
@@ -32,6 +33,12 @@ export async function generateMetadata({
     title: project.title,
     description: project.summary,
     alternates: { canonical: project.url },
+    openGraph: {
+      type: "article",
+      title: project.title,
+      description: project.summary,
+      url: project.url,
+    },
   };
 }
 
@@ -195,6 +202,8 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
           )}
         </div>
       </ViewTransition>
+
+      <JsonLd data={projectSchema(project)} />
 
       {next && (
         <div className="container-site mt-24">

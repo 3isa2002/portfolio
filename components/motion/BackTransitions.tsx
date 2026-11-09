@@ -36,7 +36,7 @@ export function BackTransitions() {
         return;
       e.stopImmediatePropagation();
       name(true);
-      const transition = document.startViewTransition(async () => {
+      const update = async () => {
         name(false);
         const main = document.getElementById("main");
         const changed = waitForChange(main);
@@ -45,7 +45,15 @@ export function BackTransitions() {
         replaying = false;
         await changed;
         name(true);
-      });
+      };
+      // Typed "nav-back": the CSS keeps the cover morph and skips the scanline sweep. Browsers
+      // without transition types only accept the callback form.
+      let transition: ViewTransition;
+      try {
+        transition = document.startViewTransition({ update, types: ["nav-back"] });
+      } catch {
+        transition = document.startViewTransition(update);
+      }
       // If React starts its own view transition for the same update, the browser skips this one;
       // the DOM update still happens and the morph runs in React's, so the rejection is expected.
       transition.ready.catch(() => {});

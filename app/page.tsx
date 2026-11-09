@@ -1,6 +1,7 @@
 import { BootIntro } from "@/components/intro/BootIntro";
 import { IntroScript } from "@/components/intro/IntroScript";
 import { SectionIndex } from "@/components/layout/SectionIndex";
+import { JsonLd, personSchema } from "@/components/seo/JsonLd";
 import { About } from "@/components/sections/About";
 import { Contact } from "@/components/sections/Contact";
 import { Experience } from "@/components/sections/Experience";
@@ -33,6 +34,7 @@ export default function Home() {
       <Experience />
       <Contact />
       <SectionIndex items={indexItems} />
+      <JsonLd data={personSchema()} />
     </>
   );
 }

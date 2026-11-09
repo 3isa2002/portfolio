@@ -137,8 +137,8 @@ export const en = {
     education: "Education",
   },
   contact: {
-    // Phase 6 (interactive terminal): change to "…? Type a command or use the buttons."
-    intro: "Hiring for AI or embedded roles, or have a project in mind? Get in touch.",
+    intro:
+      "Hiring for AI or embedded roles, or have a project in mind? Type a command in the terminal, or use the buttons.",
     email: "Email me",
     copyEmail: "Copy email",
     copied: "Email copied",
@@ -156,12 +156,38 @@ export const en = {
       whatsapp: "message me",
       clear: "clear the screen",
     },
+    terminal: {
+      label: "Terminal: type a command, then press Enter",
+      welcome: "type `help` to see what I can do",
+      notFound: "command not found: {cmd} — try `help`",
+      emailOut: "opening your mail app → {email}",
+      cvOut: "two flavours — pick one:",
+      opening: "opening {name} …",
+      notSet: "{name} link coming soon",
+      overclockOn: "> overclock mode enabled",
+      overclockOff: "> overclock mode disabled",
+    },
   },
   footer: {
     builtBy: "built by",
     lastDeploy: "last deploy",
     hint: "try",
   },
+  /** Command palette (SPEC §7), opened with ⌘K / Ctrl+K or the navbar button. */
+  palette: {
+    open: "Open command palette",
+    label: "Command palette",
+    placeholder: "Jump to a section, a project, or an action…",
+    empty: "Nothing matches. Try “projects” or “cv”.",
+    sections: "Sections",
+    projects: "Projects",
+    actions: "Actions",
+    copyEmail: "Copy email",
+    copied: "Email copied",
+    soundOn: "Turn sound on",
+    soundOff: "Turn sound off",
+  },
+  sound: { label: "Sound" },
   /** Boot intro (SPEC §4). `ok` lines end in a green OK. */
   intro: {
     lines: [
