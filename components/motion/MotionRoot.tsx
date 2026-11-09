@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { t } from "@/lib/i18n";
 import type { MotionEngine } from "@/lib/motion/engine";
+import { onFirstInteraction } from "@/lib/motion/wake";
 
 /**
  * Site-wide motion layer, mounted once in the root layout.
@@ -13,16 +14,6 @@ import type { MotionEngine } from "@/lib/motion/engine";
  *   so its ~56 KB and start-up work stay off the loading path; reveals only matter once the
  *   visitor scrolls. It re-scans the page after each client-side navigation.
  */
-const WAKE_EVENTS = [
-  "scroll",
-  "wheel",
-  "pointermove",
-  "pointerdown",
-  "touchstart",
-  "keydown",
-] as const;
-const WAKE_AFTER_MS = 4000;
-
 export function MotionRoot() {
   const pathname = usePathname();
   const bar = useRef<HTMLDivElement>(null);
@@ -54,27 +45,16 @@ export function MotionRoot() {
 
   useEffect(() => {
     let cancelled = false;
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      stopListening();
+    const cancelWake = onFirstInteraction(() => {
       void import("@/lib/motion/engine").then(({ createMotionEngine }) => {
         if (cancelled) return;
         engine.current = createMotionEngine();
         engine.current.scan();
       });
-    };
-    const opts = { passive: true, capture: true } as const;
-    const stopListening = () => {
-      for (const type of WAKE_EVENTS) window.removeEventListener(type, start, opts);
-      window.clearTimeout(fallback);
-    };
-    for (const type of WAKE_EVENTS) window.addEventListener(type, start, opts);
-    const fallback = window.setTimeout(start, WAKE_AFTER_MS);
+    });
     return () => {
       cancelled = true;
-      stopListening();
+      cancelWake();
       engine.current?.destroy();
       engine.current = null;
     };
