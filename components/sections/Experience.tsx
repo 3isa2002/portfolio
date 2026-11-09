@@ -3,7 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { experience } from "@/content/experience";
 import { t } from "@/lib/i18n";
 
-/** Section 5 — Experience and education cards (SPEC §5.5). Staggered reveal arrives in Phase 2. */
+/** Section 5 — Experience and education cards (SPEC §5.5), revealed with a stagger. */
 export function Experience() {
   return (
     <section id="experience" aria-labelledby="experience-title" className="section">
@@ -15,7 +15,7 @@ export function Experience() {
           id="experience-title"
         />
 
-        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-reveal="stagger">
           {experience.map((e) => {
             const Icon = e.kind === "work" ? Briefcase : GraduationCap;
             return (

@@ -17,14 +17,17 @@ export function About() {
         />
 
         <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-12">
-          <div className="space-y-5 text-lg lg:col-span-7">
+          <div className="space-y-5 text-lg lg:col-span-7" data-reveal="stagger">
             {site.about.map((p) => (
               <p key={p}>{p}</p>
             ))}
           </div>
 
           {/* TODO(mohamed): portrait photo or avatar (SPEC §11). Slot keeps a fixed 4:5 ratio, so no layout shift later. */}
-          <figure className="card relative mx-auto aspect-[4/5] w-full max-w-xs overflow-hidden lg:col-span-4 lg:col-start-9 lg:max-w-none">
+          <figure
+            data-reveal="up"
+            className="card relative mx-auto aspect-[4/5] w-full max-w-xs overflow-hidden lg:col-span-4 lg:col-start-9 lg:max-w-none"
+          >
             <div
               aria-hidden
               className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,color-mix(in_srgb,var(--cyan)_18%,transparent),transparent_60%),radial-gradient(circle_at_80%_90%,color-mix(in_srgb,var(--violet)_22%,transparent),transparent_60%)]"

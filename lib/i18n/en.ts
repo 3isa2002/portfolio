@@ -19,6 +19,9 @@ export const en = {
     filterProjects: "Filter projects by category",
     social: "Social links",
   },
+  /** Right-edge section index label for the hero (other sections use `sections.*.label`). */
+  sectionIndex: { hero: "Intro" },
+  cursor: { view: "View" },
   nav: {
     about: "About",
     projects: "Projects",

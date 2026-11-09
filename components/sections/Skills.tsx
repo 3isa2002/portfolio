@@ -25,7 +25,7 @@ export function Skills() {
           id="skills-title"
         />
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3" data-reveal="stagger">
           {site.skills.map((group) => {
             const accent = accentClass[group.accent];
             return (

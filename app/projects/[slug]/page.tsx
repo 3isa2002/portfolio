@@ -135,7 +135,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
       )}
 
       <div className="container-site mt-16">
-        <div className="prose">
+        <div className="prose" data-reveal="each">
           <MDXContent code={project.body} />
         </div>
       </div>

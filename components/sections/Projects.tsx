@@ -18,8 +18,8 @@ export function Projects() {
           id="projects-title"
         />
         <ProjectGrid projects={featured} />
-        <p className="mt-10">
-          <Link href="/projects" className="btn btn-ghost">
+        <p className="mt-10" data-reveal="up">
+          <Link href="/projects" className="btn btn-ghost" data-magnetic>
             {t.projects.seeAll}
             <ArrowRight size={16} aria-hidden className="rtl:rotate-180" />
           </Link>

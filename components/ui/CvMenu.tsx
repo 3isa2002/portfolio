@@ -48,6 +48,7 @@ export function CvMenu() {
         aria-controls={listId}
         onClick={() => setOpen((o) => !o)}
         className="btn btn-ghost"
+        data-magnetic
       >
         <Download size={16} aria-hidden />
         {t.hero.downloadCv}

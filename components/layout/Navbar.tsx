@@ -3,15 +3,16 @@ import { ChipLogo } from "@/components/ui/icons";
 import { site } from "@/content/site";
 import { t } from "@/lib/i18n";
 import { MobileMenu } from "./MobileMenu";
+import { NavbarShell } from "./NavbarShell";
 import { navLinks } from "./nav-links";
 
 /**
- * Persistent navbar (SPEC §5). Phase 1: static glass bar.
- * Phase 2 adds hide-on-scroll-down; Phase 6 adds the ⌘K hint and the sound toggle.
+ * Persistent navbar (SPEC §5). Scroll behaviour (glass after 80px, hide on scroll down) lives in
+ * the client `NavbarShell`; the links stay server-rendered. Phase 6 adds the ⌘K hint and sound toggle.
  */
 export function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/75 backdrop-blur-md">
+    <NavbarShell>
       <nav
         aria-label={t.a11y.mainNav}
         className="container-site flex h-16 items-center justify-between gap-6"
@@ -34,6 +35,6 @@ export function Navbar() {
 
         <MobileMenu />
       </nav>
-    </header>
+    </NavbarShell>
   );
 }

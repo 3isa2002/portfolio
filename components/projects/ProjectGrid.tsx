@@ -12,7 +12,7 @@ type GridProps = { projects: ProjectCardData[]; headingLevel?: 2 | 3 };
 /**
  * Filterable project grid (SPEC §6): pills All / AI / Embedded / IoT, state in `?c=`.
  * Used on the home page (featured) and on /projects (all).
- * Phase 5 animates the reflow with Motion `layout`.
+ * Pills and cards reveal on scroll (motion engine); Phase 5 animates the reflow with Motion `layout`.
  *
  * The static HTML renders the unfiltered grid (Suspense fallback), so every card is
  * in the exported page for crawlers and no-JS visitors; the filter applies after hydration.
@@ -55,7 +55,12 @@ function GridView({
 
   return (
     <div>
-      <div role="group" aria-label={t.a11y.filterProjects} className="mb-8 flex flex-wrap gap-2">
+      <div
+        role="group"
+        aria-label={t.a11y.filterProjects}
+        className="mb-8 flex flex-wrap gap-2"
+        data-reveal="up"
+      >
         {options.map((c) => {
           const pressed = c === active;
           return (
@@ -79,7 +84,7 @@ function GridView({
       {visible.length === 0 ? (
         <p className="font-mono text-sm text-dim">{t.projects.empty}</p>
       ) : (
-        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-reveal="stagger">
           {visible.map((p, i) => {
             // Bento: the first card spans 2 columns on desktop when showing everything.
             const wide = i === 0 && !active;
