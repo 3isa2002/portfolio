@@ -1,0 +1,67 @@
+---
+# From the CVs (2026-11-09). TODO(mohamed): confirm status; add a GitHub link if the code is public,
+# a demo video (links.video) and photos (gallery) when you have them.
+title: "Wanas"
+slug: "wanas"
+summary: "An ESP32-S3 desk assistant that turns voice and touch into actions through the Gemini API"
+category: ["AI", "Embedded", "IoT"]
+featured: true
+order: 1
+year: 2026
+status: "prototype"
+role: "Solo — hardware, firmware and LLM integration"
+stack: ["C/C++", "ESP32-S3", "Gemini API", "Python", "SPI", "I2S", "Wi-Fi"]
+cover: "cover.webp"
+links:
+  github: ""
+  live: ""
+  video: ""
+metrics:
+  - { label: "Peripherals", value: "4" }
+  - { label: "I2S ports", value: "2" }
+  - { label: "Supply rails", value: "3.3 V + 5 V" }
+---
+
+## Problem
+
+I wanted a desk companion that understands plain speech instead of fixed commands, and answers with
+sound and a face on a small screen. The catch: it had to run on a microcontroller, inside its memory
+and timing limits, with the language understanding happening in the cloud.
+
+## Approach
+
+Voice and touch come in on an ESP32-S3. The request goes over Wi-Fi to the Gemini API (HTTPS/REST),
+which detects the intent of the natural-language command; each detected intent maps to a device
+response or action.
+
+<Architecture
+  nodes={[
+    { id: "mic", label: "INMP441 mic", note: "I2S", kind: "hw" },
+    { id: "touch", label: "TTP223 touch", note: "GPIO", kind: "hw" },
+    { id: "esp", label: "ESP32-S3", note: "C/C++ firmware", kind: "hw" },
+    { id: "llm", label: "Gemini API", note: "intent detection", kind: "ai" },
+    { id: "intent", label: "Intent → action", note: "device response", kind: "ai" },
+    { id: "display", label: "GC9A01 display", note: "SPI", kind: "hw" },
+    { id: "amp", label: "MAX98357A amp", note: "I2S → speaker", kind: "hw" },
+  ]}
+  edges={[
+    ["mic", "esp"],
+    ["touch", "esp"],
+    ["esp", "llm"],
+    ["llm", "intent"],
+    ["intent", "display"],
+    ["intent", "amp"],
+  ]}
+  title="Wanas: microphone and touch input reach the ESP32-S3, which calls the Gemini API over Wi-Fi; the detected intent drives the round display and the speaker."
+/>
+
+The hardware is four peripherals around the ESP32-S3: a GC9A01 round display on SPI, an INMP441
+MEMS microphone and a MAX98357A Class-D amplifier on two separate I2S ports, and a TTP223 touch
+sensor. I calculated the 3.3 V / 5 V power budget, added capacitors to stop Wi-Fi brownout resets,
+and documented the wiring map.
+
+## Result
+
+A working desk device that responds to natural-language commands with sound and an animated face,
+handling sensor input, Wi-Fi communication and response latency within the board's memory and
+timing constraints.

@@ -9,11 +9,10 @@ const loading = () => (
 
 /**
  * Interactive demos (SPEC §6): browser-only components in components/demos/, each in its own
- * chunk, loaded only on a page that uses it. Use from frontmatter (`demo: "reply-twin"`) or
+ * chunk, loaded only on a page that uses it. Use from frontmatter (`demo: "iot-dashboard"`) or
  * in MDX (`<Demo name="iot-dashboard" />`). Add a demo by adding a line here.
  */
 const demos = {
-  "reply-twin": dynamic(() => import("@/components/demos/ReplyTwinDemo"), { loading }),
   "iot-dashboard": dynamic(() => import("@/components/demos/IotDashboardDemo"), { loading }),
 } as const;
 

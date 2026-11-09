@@ -1,0 +1,45 @@
+---
+# From the IoT CV (2026-11-09). TODO(mohamed): confirm the year (the CV only says "University"),
+# the sensors used, and add a photo of the build.
+title: "Smart Parking & Smart Gate"
+slug: "smart-parking"
+summary: "An Arduino system that detects vehicles with sensors and controls the parking gate on its own"
+category: ["IoT", "Embedded"]
+featured: true
+order: 4
+year: 2023
+status: "prototype"
+role: "University project"
+stack: ["Arduino", "Sensors", "C/C++"]
+cover: "cover.webp"
+links:
+  github: ""
+  live: ""
+  video: ""
+---
+
+## Problem
+
+A parking entrance that needs someone to watch for cars and open the gate by hand.
+
+## Approach
+
+An Arduino reads sensors that detect an arriving vehicle and controls the gate in response, so cars
+are let in without anyone standing at the barrier.
+
+<Architecture
+  nodes={[
+    { id: "sense", label: "Vehicle sensors", kind: "hw" },
+    { id: "mcu", label: "Arduino", note: "C/C++", kind: "hw" },
+    { id: "gate", label: "Gate", note: "opens / closes", kind: "hw" },
+  ]}
+  edges={[
+    ["sense", "mcu"],
+    ["mcu", "gate"],
+  ]}
+  title="Smart gate: vehicle sensors feed an Arduino, which opens and closes the gate."
+/>
+
+## Result
+
+A working prototype that detects vehicles and operates the gate automatically.

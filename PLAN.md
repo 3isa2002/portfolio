@@ -31,7 +31,7 @@ Inter, JetBrains Mono) · ESLint + Prettier · Lighthouse CI · pnpm.
 | 4   | Boot intro                | Full 3.2 s storyboard (SPEC §4), skip button + any input skips, first-visit `localStorage`, 600 ms return version, handoff into the 3D scene                                                                                                    | ≤ 3.2 s, skippable any moment, never shows twice in a row                        | ✅ done (PR #4) |
 | 5   | Projects experience       | Card tilt + sheen + glow, hover preview video, animated filter (`?c=`), shared-element card → case study, `Architecture`, `Gallery` + lightbox, `Video`, `Board3D`, count-up metrics, next-project card, Reply Twin + IoT dashboard demos       | Case study open/close smooth both ways, incl. browser back                       | ✅ done (PR #5) |
 | 6   | Extras and SEO            | `⌘K` palette, terminal contact, Konami egg, optional sound, build-time OG images, sitemap, robots, JSON-LD, Cloudflare Web Analytics. Optional "Ask my AI" only if approved                                                                     | All Lighthouse targets in SPEC §8 pass                                           | ✅ done (PR #6) |
-| 7   | Real content and launch   | Replace every `TODO(mohamed)`, compress media, large files → R2, cross-browser + real-device testing, custom domain if bought                                                                                                                   | No placeholders remain; site shared publicly                                     | ☐               |
+| 7   | Real content and launch   | Replace every `TODO(mohamed)`, compress media, large files → R2, cross-browser + real-device testing, custom domain if bought                                                                                                                   | No placeholders remain; site shared publicly                                     | 🚧 in progress  |
 
 ## Acceptance targets (every phase, SPEC §8)
 
@@ -262,16 +262,30 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
 - Preview check: OG images served as image/png via `_headers`; no console errors.
 - Merged as PR #6 (d955218); production deploy from `main` (first one with Web Analytics).
 
-## Inputs needed from Mohamed (before Phase 7, SPEC §11)
+### Phase 7 — Real content (part 1, 2026-11-09)
 
-- [ ] 3-sentence bio + 4–6 timeline milestones
-- [ ] Final project list (title, summary, category, stack, year, status, links)
-- [ ] Media per project (cover, 5–10 s hover loop, screenshots, demo video, `.glb`)
-- [ ] Both CV PDFs (AI Engineer, Embedded & IoT)
-- [ ] Contact links: email, GitHub, LinkedIn, WhatsApp (optional)
-- [ ] Confirmed skill list
-- [ ] Experience and education entries
+- Source: Mohamed's CVs (AI Engineer, IoT, Java). Nothing invented: facts not in the CVs are left
+  empty or noted as hidden `TODO(mohamed)` comments (never visible on the site).
+- Decided: public email essamohmed8@gmail.com; no phone on the site (CV PDFs only); Shadia Travel
+  included under a new "Web" category (neutral accent).
+- Content: bio, roles, hero lines, 5 milestones, 6 experience/education entries, skills (names match
+  project stacks: 20 skill → project links in the graph), LinkedIn link, both CV PDFs.
+- Projects: Wanas (AI · Embedded · IoT), Arabic ID OCR Pipeline (AI), Shadia Travel (Web), Smart Parking
+  & Smart Gate (IoT · Embedded), each with an architecture diagram; illustrated covers (sharp-rendered SVG)
+  until real photos arrive. The three placeholder projects, their media and the Reply Twin demo removed.
+- Verified: no placeholder text in any built page; no console errors on all pages; Lighthouse (mobile)
+  home 89–95, case studies 93–94 (one noisy 76 run: an unattributable browser task), A11y/BP/SEO 100.
+
+## Inputs needed from Mohamed (SPEC §11)
+
+- [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)
+- [x] Final project list (from the CVs) — still open: GitHub/live links, Smart Parking's year
+- [ ] Media per project (photos/screenshots, hover clip, demo video, `.glb`) — illustrated covers for now
+- [x] Both CV PDFs (AI Engineer, Embedded & IoT)
+- [x] Contact links: email, GitHub, LinkedIn (no WhatsApp: decided)
+- [x] Confirmed skill list (from the CVs)
+- [x] Experience and education entries (from the CVs)
 - [ ] Portrait photo or avatar decision
 - [ ] Custom domain or stay on `*.pages.dev`
-- [ ] "Ask my AI" widget: yes / no
+- [x] "Ask my AI" widget: no (for now)
 - [ ] Arabic RTL later: yes / no
