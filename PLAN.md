@@ -306,6 +306,24 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
 - Verified: all 16 pages load with no console errors, no 4xx and no broken images; initial home JS
   198.3 KB gz (unchanged); Lighthouse (mobile) home 92 / 93 / 91, /projects 91, A11y/BP/SEO 100.
 
+### Fixes — background and intro sound (2026-11-10)
+
+- Background: on an integrated GPU (Mohamed's laptop runs Chrome on Intel UHD) the boot intro and
+  the 3D scene together dropped under 45 fps, so the monitor stepped full → reduced → off and the
+  page stayed static for the whole visit. Now a slow frame rate steps down to `lite` at most
+  (400 points, no bloom, still interactive), the monitor starts only after the intro plus a 2 s
+  warm-up, samples 3 s, and restarts after each step. A lost WebGL context rebuilds the canvas
+  (twice at most, then static).
+- Intro sound: browsers block audio until a click on the page itself, so a fresh load could never
+  play the intro score. Now, when sound is on but still blocked, the intro waits on an "Enter"
+  gate (Mohamed's decision): Enter (click, tap, Enter/Space) unlocks audio and plays the intro
+  from the start with its score; "Enter without sound" turns sound off (remembered); Esc skips.
+  Client-side visits back home (audio already running) and sound-off visitors skip the gate.
+- The navbar speaker shows "on" (dimmed) while sound is on but waiting for the first click,
+  instead of the muted icon.
+- Verified in headful Chrome with the real autoplay policy: gate, mouse/keyboard/silent/Esc paths,
+  no gate on returning home, background still `full` after 20 s; Lighthouse home 92 / 92.
+
 ## Inputs needed from Mohamed (SPEC §11)
 
 - [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)

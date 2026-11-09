@@ -16,6 +16,7 @@ import {
   type ShaderMaterial,
   Vector2,
 } from "three";
+import { INTRO_DONE } from "@/lib/motion/wake";
 import { LEVELS, SCENE_COLORS, type SceneLevel } from "@/lib/three/levels";
 import { buildNetwork } from "@/lib/three/network";
 import { linesFragment, linesVertex, pointsFragment, pointsVertex } from "@/lib/three/shaders";
@@ -26,20 +27,23 @@ import { linesFragment, linesVertex, pointsFragment, pointsVertex } from "@/lib/
  * `BackgroundLayer`, never server-rendered.
  *
  * Frame budget: rendering is driven by our own rAF loop capped at 60 fps (`frameloop="never"`),
- * which also stops while the tab is hidden. drei's PerformanceMonitor reports < 45 fps for 2 s
- * to the parent, which steps the quality down.
+ * which also stops while the tab is hidden. drei's PerformanceMonitor reports < 45 fps for 3 s
+ * to the parent, which steps the quality down (never below `lite`).
  */
 export default function NetworkScene({
   level,
   interactive,
   onReady,
   onDecline,
+  onLost,
 }: {
   level: SceneLevel;
   /** Mouse/trackpad: nodes react to the cursor. */
   interactive: boolean;
   onReady: () => void;
   onDecline: () => void;
+  /** The browser dropped the WebGL context (GPU reset, driver switch, too many contexts). */
+  onLost: () => void;
 }) {
   const config = LEVELS[level];
   const inputs = useSceneInputs(interactive);
@@ -53,10 +57,21 @@ export default function NetworkScene({
       camera={{ position: [0, 0, CAMERA_Z], fov: FOV, near: 0.1, far: 40 }}
       gl={{ antialias: false, alpha: false, stencil: false, powerPreference: "high-performance" }}
       style={{ pointerEvents: "none" }}
+      onCreated={({ gl }) => {
+        gl.domElement.addEventListener(
+          "webglcontextlost",
+          (e) => {
+            e.preventDefault();
+            onLost();
+          },
+          { once: true },
+        );
+      }}
     >
       <color attach="background" args={[SCENE_COLORS.bg]} />
       <FrameLimiter fps={60} />
-      <Monitor onDecline={onDecline} />
+      {/* Restarted (with its warm-up) after every step; `lite` is the floor, so nothing to watch. */}
+      {level !== "lite" && <Monitor key={level} onDecline={onDecline} />}
       <Network count={config.count} inputs={inputs} />
       {config.bloom && (
         <Suspense fallback={null}>
@@ -315,20 +330,31 @@ function FrameLimiter({ fps }: { fps: number }) {
 }
 
 /**
- * Starts sampling after a short warm-up (shader compile and the first upload are slow on any
- * GPU), then reports when 2 s of samples (8 × 250 ms) average under 45 fps.
+ * Starts sampling once the boot intro is over (it shares the GPU, and its few seconds of load
+ * are not the steady state) plus a warm-up for shader compiles and uploads, then reports when
+ * 3 s of samples (12 × 250 ms) average under 45 fps.
  */
 function Monitor({ onDecline }: { onDecline: () => void }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => {
-    const t = window.setTimeout(() => setArmed(true), 1500);
-    return () => window.clearTimeout(t);
+    let timer: number | undefined;
+    const arm = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setArmed(true), 2000);
+    };
+    const introPlaying = () => document.documentElement.dataset.intro === "full";
+    if (introPlaying()) window.addEventListener(INTRO_DONE, arm, { once: true });
+    else arm();
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener(INTRO_DONE, arm);
+    };
   }, []);
   if (!armed) return null;
   return (
     <PerformanceMonitor
       ms={250}
-      iterations={8}
+      iterations={12}
       threshold={0.75}
       bounds={() => [45, Infinity]}
       onDecline={onDecline}
