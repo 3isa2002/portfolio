@@ -16,7 +16,14 @@ These are the only places you need to touch to update the site. No component cod
 | Projects (one file each) + their media     | `content/projects/<slug>.mdx` + `public/projects/<slug>/`                |
 | CV PDFs                                    | `public/cv/mohamed-eissa-ai.pdf`, `public/cv/mohamed-eissa-embedded.pdf` |
 
-_(These folders arrive in Phase 1.)_
+Experience, timeline and education entries live in `content/experience.ts` and `content/timeline.ts`.
+UI text (buttons, labels) is in `lib/i18n/en.ts`.
+
+### Adding a project
+
+1. Create `content/projects/<slug>.mdx` (copy an existing one; frontmatter is validated at build time).
+2. Put its media in `public/projects/<slug>/` (at least `cover.webp`, 16:10).
+3. Run `pnpm build`. The card and the case-study page appear automatically.
 
 ## Local development
 

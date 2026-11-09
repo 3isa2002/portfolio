@@ -1,0 +1,48 @@
+---
+# TODO(mohamed): placeholder project — replace text, links, metrics and media with the real ones.
+title: "Reply Twin"
+slug: "reply-twin"
+summary: "Local LLM that drafts WhatsApp replies in my own style"
+category: ["AI"]
+featured: true
+order: 1
+year: 2026
+status: "in-progress"
+role: "Solo — design, data, model, app"
+stack: ["Python", "Ollama", "RAG", "ChromaDB", "LangChain"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002"
+  live: ""
+  video: ""
+metrics:
+  - { label: "Response time", value: "1.2 s" }
+  - { label: "Runs on", value: "Local GPU" }
+  - { label: "Chats indexed", value: "12k" }
+demo: "reply-twin"
+---
+
+<Callout>TODO(mohamed): placeholder case study. The structure is real; the words are not.</Callout>
+
+## Problem
+
+Replying to dozens of WhatsApp messages a day takes time, and generic AI replies sound nothing like me.
+I wanted drafts that match my tone, my slang and my usual answers — without sending my chats to a cloud API.
+
+## Approach
+
+Exported chats are cleaned, split into conversation turns and embedded into a local ChromaDB index.
+For each incoming message, the closest past exchanges are retrieved and passed to a local model running in Ollama,
+which drafts a reply in the same style.
+
+```python title="retrieve.py"
+def draft_reply(message: str, k: int = 6) -> str:
+    examples = index.similarity_search(message, k=k)
+    prompt = build_prompt(message, examples)
+    return llm.invoke(prompt)
+```
+
+## Result
+
+Drafts arrive in about a second on a local GPU, and most need only small edits before sending.
+Nothing leaves the machine.

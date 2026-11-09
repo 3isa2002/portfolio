@@ -42,3 +42,7 @@ next-env.d.ts
 
 # velite content output
 /.velite/
+
+# generated at build time
+/public/_img/
+/public/static/
