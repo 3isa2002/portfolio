@@ -1,11 +1,12 @@
 /**
- * Optional UI sound (SPEC §4, §7): off by default, toggled from the navbar or the command
- * palette, remembered in localStorage. Every sound is synthesized with the Web Audio API, so
+ * UI sound (SPEC §4, §7): on by default (Mohamed's decision, 2026-11-09), toggled from the navbar
+ * or the command palette, remembered in localStorage. Browsers only let a page play audio after
+ * the visitor has interacted with it (a click, tap or key), so the first sounds come after that;
+ * `unlockAudio` resumes the audio context on that first interaction. Every sound is synthesized with the Web Audio API, so
  * there are no audio files to download (SPEC: "files under 50 KB" — here, zero).
  *
  *   tick  a short, soft click for hovers and confirmations
- *   hum   a low boot hum with a rising tone (played when sound is switched on, and with the
- *         return-visit name scramble when sound is already on)
+ *   hum   a low boot hum with a rising tone (with the boot intro, and when sound is switched on)
  */
 const KEY = "sound";
 export const SOUND_EVENT = "sound:change";
@@ -15,10 +16,15 @@ let lastTick = 0;
 
 export function soundEnabled(): boolean {
   try {
-    return localStorage.getItem(KEY) === "on";
+    return localStorage.getItem(KEY) !== "off";
   } catch {
-    return false;
+    return true;
   }
+}
+
+/** Call on the visitor's first click / tap / key: browsers allow audio only after a gesture. */
+export function unlockAudio() {
+  if (soundEnabled()) audio();
 }
 
 export function setSound(on: boolean) {

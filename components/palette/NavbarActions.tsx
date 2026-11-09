@@ -4,7 +4,7 @@ import { Search, Volume2, VolumeX } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { t } from "@/lib/i18n";
-import { play, SOUND_EVENT, setSound, soundEnabled } from "@/lib/sound";
+import { play, SOUND_EVENT, setSound, soundEnabled, unlockAudio } from "@/lib/sound";
 import type { PaletteData } from "./CommandPalette";
 import { useShortcutLabel } from "./platform";
 
@@ -30,7 +30,7 @@ const subscribeSound = (cb: () => void) => {
 export function NavbarActions({ data }: { data: PaletteData }) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const sound = useSyncExternalStore(subscribeSound, soundEnabled, () => false);
+  const sound = useSyncExternalStore(subscribeSound, soundEnabled, () => true);
   const shortcut = useShortcutLabel();
   // Where focus was when the palette opened: it goes back there on close (the dialog has no
   // Radix trigger to return to, since it opens from a shortcut or from several buttons).
@@ -58,6 +58,22 @@ export function NavbarActions({ data }: { data: PaletteData }) {
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener(OPEN_PALETTE, show);
+    };
+  }, []);
+
+  // Audio may start only after a gesture: unlock it on the first click, tap or key.
+  useEffect(() => {
+    const opts = { capture: true, passive: true } as const;
+    const unlock = () => {
+      unlockAudio();
+      for (const type of ["pointerdown", "keydown", "touchstart"] as const)
+        window.removeEventListener(type, unlock, opts);
+    };
+    for (const type of ["pointerdown", "keydown", "touchstart"] as const)
+      window.addEventListener(type, unlock, opts);
+    return () => {
+      for (const type of ["pointerdown", "keydown", "touchstart"] as const)
+        window.removeEventListener(type, unlock, opts);
     };
   }, []);
 
