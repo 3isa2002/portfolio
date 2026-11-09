@@ -4,7 +4,15 @@ import { Search, Volume2, VolumeX } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { t } from "@/lib/i18n";
-import { play, SOUND_EVENT, setSound, soundEnabled, unlockAudio } from "@/lib/sound";
+import {
+  justUnlocked,
+  play,
+  SOUND_EVENT,
+  setSound,
+  soundActive,
+  soundEnabled,
+  unlockAudio,
+} from "@/lib/sound";
 import type { PaletteData } from "./CommandPalette";
 import { useShortcutLabel } from "./platform";
 
@@ -30,7 +38,8 @@ const subscribeSound = (cb: () => void) => {
 export function NavbarActions({ data }: { data: PaletteData }) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const sound = useSyncExternalStore(subscribeSound, soundEnabled, () => true);
+  // Shown as on only when sound is enabled *and* the browser lets the page play it.
+  const sound = useSyncExternalStore(subscribeSound, soundActive, () => false);
   const shortcut = useShortcutLabel();
   // Where focus was when the palette opened: it goes back there on close (the dialog has no
   // Radix trigger to return to, since it opens from a shortcut or from several buttons).
@@ -103,7 +112,13 @@ export function NavbarActions({ data }: { data: PaletteData }) {
       </button>
       <button
         type="button"
-        onClick={() => setSound(!sound)}
+        onClick={() => {
+          // The click that unlocked audio already played the hum: keep sound on.
+          if (justUnlocked()) return;
+          // Enabled but still blocked by the browser: this press wakes it rather than muting it.
+          if (soundEnabled() && !sound) return unlockAudio();
+          setSound(!sound);
+        }}
         aria-pressed={sound}
         aria-label={t.sound.label}
         className="nav-tool"
