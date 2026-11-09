@@ -1,3 +1,5 @@
+import { BootIntro } from "@/components/intro/BootIntro";
+import { IntroScript } from "@/components/intro/IntroScript";
 import { SectionIndex } from "@/components/layout/SectionIndex";
 import { About } from "@/components/sections/About";
 import { Contact } from "@/components/sections/Contact";
@@ -21,6 +23,9 @@ const indexItems = [
 export default function Home() {
   return (
     <>
+      {/* Runs before first paint: picks the intro mode (full / short / calm). */}
+      <IntroScript />
+      <BootIntro />
       <Hero />
       <About />
       <Projects />

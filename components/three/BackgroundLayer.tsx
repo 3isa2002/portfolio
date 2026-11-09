@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { QUERIES, useReducedMotion } from "@/lib/motion/media";
-import { onFirstInteraction, whenIdle } from "@/lib/motion/wake";
+import { INTRO_START, onFirstInteraction, whenIdle } from "@/lib/motion/wake";
 import { type BackgroundLevel, pickLevel, stepDown } from "@/lib/three/levels";
 
 // three + R3F + drei + postprocessing live in this chunk only (SPEC §8: after first paint, no SSR).
@@ -26,13 +26,19 @@ export function BackgroundLayer() {
   useEffect(() => {
     if (reduced) return;
     let cancelIdle = () => {};
-    const cancelWake = onFirstInteraction(() => {
-      cancelIdle = whenIdle(() => {
-        const fine = window.matchMedia(QUERIES.finePointer).matches;
-        setInteractive(fine);
-        setLevel((current) => current ?? pickLevel(fine));
-      }, 1500);
-    });
+    // Desktops start loading as the boot intro begins, so the network is there when the page
+    // appears; phones wait for the first interaction (or the timer), never during the intro.
+    const fine = window.matchMedia(QUERIES.finePointer).matches;
+    const cancelWake = onFirstInteraction(
+      () => {
+        cancelIdle = whenIdle(() => {
+          setInteractive(fine);
+          setLevel((current) => current ?? pickLevel(fine));
+        }, 1500);
+      },
+      4000,
+      fine ? [INTRO_START] : [],
+    );
     return () => {
       cancelWake();
       cancelIdle();

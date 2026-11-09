@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { t } from "@/lib/i18n";
 import type { MotionEngine } from "@/lib/motion/engine";
-import { onFirstInteraction } from "@/lib/motion/wake";
+import { QUERIES } from "@/lib/motion/media";
+import { INTRO_DONE, onFirstInteraction } from "@/lib/motion/wake";
 
 /**
  * Site-wide motion layer, mounted once in the root layout.
@@ -45,13 +46,19 @@ export function MotionRoot() {
 
   useEffect(() => {
     let cancelled = false;
-    const cancelWake = onFirstInteraction(() => {
-      void import("@/lib/motion/engine").then(({ createMotionEngine }) => {
-        if (cancelled) return;
-        engine.current = createMotionEngine();
-        engine.current.scan();
-      });
-    });
+    const cancelWake = onFirstInteraction(
+      () => {
+        void import("@/lib/motion/engine").then(({ createMotionEngine }) => {
+          if (cancelled) return;
+          engine.current = createMotionEngine();
+          engine.current.scan();
+        });
+      },
+      4000,
+      // Desktop wakes as the boot intro ends; phones keep waiting for a touch (or the timer),
+      // so the intro and the engine never compete for a phone's main thread.
+      window.matchMedia(QUERIES.finePointer).matches ? [INTRO_DONE] : [],
+    );
     return () => {
       cancelled = true;
       cancelWake();

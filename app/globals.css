@@ -132,6 +132,95 @@
   opacity: 1;
 }
 
+/*
+ * Boot intro overlay (components/intro). Only shown when the inline IntroScript set
+ * html[data-intro="full"] before first paint. If its timeline never starts (JS failed), the
+ * failsafe animation hides it after 6 s so the page can never stay covered.
+ */
+.boot {
+  display: none;
+}
+html[data-intro="full"] .boot {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+html[data-intro="full"] .boot:not([data-running]) {
+  animation: boot-failsafe 0.4s 6s forwards;
+}
+@keyframes boot-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.boot-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+}
+.boot-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.boot-svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  inline-size: min(84vmin, 560px);
+  block-size: min(84vmin, 560px);
+  translate: -50% -50%;
+  color: var(--cyan);
+  filter: drop-shadow(0 0 6px currentColor);
+}
+.boot-svg [data-boot-trace] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.boot-svg [data-boot-node] {
+  opacity: 0;
+}
+.boot-log {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.9;
+  color: var(--text-dim);
+}
+.boot-line {
+  clip-path: inset(0 100% 0 0);
+  white-space: pre;
+}
+.boot-name {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+}
+.boot-skip {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 2rem;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Reduced motion: no intro; the hero fades in instead (opacity only, allowed by SPEC §4). */
+html[data-intro="calm"] #hero {
+  animation: hero-in 600ms var(--ease-out-expo) both !important;
+  animation-duration: 600ms !important;
+}
+@keyframes hero-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Faint grid + noise overlay for depth (SPEC §3: 2–3% opacity). Pure CSS, no image request. */
 .bg-texture::before {
   content: "";

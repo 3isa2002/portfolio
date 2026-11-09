@@ -22,16 +22,16 @@ Inter, JetBrains Mono) · ESLint + Prettier · Lighthouse CI · pnpm.
 
 ## Phases
 
-| #   | Phase                     | Main deliverables                                                                                                                                                                                                                               | Done when                                                                        | Status          |
-| --- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------- |
-| 0   | Setup and deploy pipeline | Next.js + TS strict + Tailwind + tokens + fonts, static export, ESLint/Prettier, GitHub repo, Cloudflare Pages, Lighthouse CI workflow                                                                                                          | Placeholder page live on `*.pages.dev`, every push redeploys                     | ✅ done         |
-| 1   | Layout and content model  | Navbar, footer, 6 home sections (static placeholders, real mobile layouts), Velite schema, 3 placeholder projects (AI / Embedded / IoT), grid without effects, case-study pages, `/projects`, 404, CV redirects (`_redirects`), i18n dictionary | Adding a new `.mdx` creates a card + page with no code changes                   | ✅ done (PR #1) |
-| 2   | Motion foundation         | `useReducedMotion`, Lenis ↔ GSAP ticker, SplitText reveals, scroll progress bar, custom cursor, magnetic buttons, About timeline scrub (pinned on desktop)                                                                                      | Every section animates in; with reduced motion everything is static and readable | ✅ done (PR #2) |
-| 3   | 3D background             | R3F particle network (1,500 desktop / 400 mobile), circuit ↔ neural morph on scroll, cursor reaction, bloom, `PerformanceMonitor` downgrade, static fallback                                                                                    | 60 fps on a mid laptop; Lighthouse mobile Perf still ≥ 90                        | ✅ done (PR #3) |
-| 4   | Boot intro                | Full 3.2 s storyboard (SPEC §4), skip button + any input skips, first-visit `localStorage`, 600 ms return version, handoff into the 3D scene                                                                                                    | ≤ 3.2 s, skippable any moment, never shows twice in a row                        | ☐               |
-| 5   | Projects experience       | Card tilt + sheen + glow, hover preview video, animated filter (`?c=`), shared-element card → case study, `Architecture`, `Gallery` + lightbox, `Video`, `Board3D`, count-up metrics, next-project card, Reply Twin + IoT dashboard demos       | Case study open/close smooth both ways, incl. browser back                       | ☐               |
-| 6   | Extras and SEO            | `⌘K` palette, terminal contact, Konami egg, optional sound, build-time OG images, sitemap, robots, JSON-LD, Cloudflare Web Analytics. Optional "Ask my AI" only if approved                                                                     | All Lighthouse targets in SPEC §8 pass                                           | ☐               |
-| 7   | Real content and launch   | Replace every `TODO(mohamed)`, compress media, large files → R2, cross-browser + real-device testing, custom domain if bought                                                                                                                   | No placeholders remain; site shared publicly                                     | ☐               |
+| #   | Phase                     | Main deliverables                                                                                                                                                                                                                               | Done when                                                                        | Status            |
+| --- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------- |
+| 0   | Setup and deploy pipeline | Next.js + TS strict + Tailwind + tokens + fonts, static export, ESLint/Prettier, GitHub repo, Cloudflare Pages, Lighthouse CI workflow                                                                                                          | Placeholder page live on `*.pages.dev`, every push redeploys                     | ✅ done           |
+| 1   | Layout and content model  | Navbar, footer, 6 home sections (static placeholders, real mobile layouts), Velite schema, 3 placeholder projects (AI / Embedded / IoT), grid without effects, case-study pages, `/projects`, 404, CV redirects (`_redirects`), i18n dictionary | Adding a new `.mdx` creates a card + page with no code changes                   | ✅ done (PR #1)   |
+| 2   | Motion foundation         | `useReducedMotion`, Lenis ↔ GSAP ticker, SplitText reveals, scroll progress bar, custom cursor, magnetic buttons, About timeline scrub (pinned on desktop)                                                                                      | Every section animates in; with reduced motion everything is static and readable | ✅ done (PR #2)   |
+| 3   | 3D background             | R3F particle network (1,500 desktop / 400 mobile), circuit ↔ neural morph on scroll, cursor reaction, bloom, `PerformanceMonitor` downgrade, static fallback                                                                                    | 60 fps on a mid laptop; Lighthouse mobile Perf still ≥ 90                        | ✅ done (PR #3)   |
+| 4   | Boot intro                | Full 3.2 s storyboard (SPEC §4), skip button + any input skips, first-visit `localStorage`, 600 ms return version, handoff into the 3D scene                                                                                                    | ≤ 3.2 s, skippable any moment, never shows twice in a row                        | 🔍 in review (PR) |
+| 5   | Projects experience       | Card tilt + sheen + glow, hover preview video, animated filter (`?c=`), shared-element card → case study, `Architecture`, `Gallery` + lightbox, `Video`, `Board3D`, count-up metrics, next-project card, Reply Twin + IoT dashboard demos       | Case study open/close smooth both ways, incl. browser back                       | ☐                 |
+| 6   | Extras and SEO            | `⌘K` palette, terminal contact, Konami egg, optional sound, build-time OG images, sitemap, robots, JSON-LD, Cloudflare Web Analytics. Optional "Ask my AI" only if approved                                                                     | All Lighthouse targets in SPEC §8 pass                                           | ☐                 |
+| 7   | Real content and launch   | Replace every `TODO(mohamed)`, compress media, large files → R2, cross-browser + real-device testing, custom domain if bought                                                                                                                   | No placeholders remain; site shared publicly                                     | ☐                 |
 
 ## Acceptance targets (every phase, SPEC §8)
 
@@ -72,6 +72,14 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   stops in hidden tabs. Quality levels (`lib/three/levels.ts`): desktop `full` (1,500 points + bloom),
   phones `lite` (400 points), drei `PerformanceMonitor` < 45 fps for 2 s → `reduced` (750, no bloom)
   → static. Decided 2026-11-09: phones get the light 3D, not static (SPEC §7 vs §10 conflict).
+- **Boot intro:** `components/intro/IntroScript.tsx` (inline, before first paint) sets
+  `<html data-intro>` to `full` (first visit to `/`, stores `intro_seen=1` at once), `short` (return
+  visit: 600 ms name scramble) or `calm` (reduced motion: hero fades in). `BootIntro.tsx` runs one GSAP
+  timeline (GSAP imported after first paint). The real hero is never hidden: the name resolves on a
+  canvas laid exactly over the heading (a canvas is never an LCP candidate), then the overlay fades.
+  A CSS failsafe hides the overlay after 6 s if the timeline never starts. Desktop starts loading the
+  3D scene when the intro starts, so it is there at the handoff; phones keep loading it on the first
+  interaction. Sound (spec §4) is scheduled with the navbar toggle in Phase 6.
 - **LCP in CI is a warning (decided 2026-11-09):** Lighthouse CI simulates Slow 4G, stricter than the
   spec's "4G". Its simulated LCP sits at ≈ 2.5–2.7 s even for the Phase 0 placeholder page (the floor is
   the Next/React runtime), while observed LCP is ≈ 0.4 s. CI keeps hard gates on Perf ≥ 90, A11y / BP /
@@ -159,6 +167,24 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   Case study Perf 96. Lighthouse ends before the first-interaction load, so the 3D cost is measured
   separately (above).
 - Merged as PR #3 (125fda8); production deploy from `main`.
+
+### Phase 4 — Boot intro (2026-11-09)
+
+- Storyboard (SPEC §4): caret → firmware log typing with green OK → log collapses into an SVG chip
+  (stroke draws in) → traces light up outward and branch → trace ends become nodes, cyan → violet,
+  synapses fade in, pulse → network contracts, name resolves, page appears. Chip/trace geometry is
+  generated from a fixed seed (`components/intro/chip-geometry.ts`); shared PRNG in `lib/random.ts`.
+- Skip: `Skip intro →` button (from 0.3 s) or any click, wheel, scroll, touch or key: ends in 300 ms.
+- Verified in Chrome: first paint → end 3.18 s; skip by key 302 ms; skip button; second visit gets the
+  short version; reduced motion: no overlay, hero fades in; all JS blocked: overlay hides itself;
+  canvas name pixel-aligned with the real heading on desktop and on a 390 px phone (two lines);
+  desktop handoff: the 3D canvas is on (`full`) when the intro ends.
+- Lighthouse runs as a first visit, so it always plays the full intro. Two fixes kept it fast:
+  the name scramble moved from a text copy to a canvas (the copy became a late LCP candidate:
+  LCP 3.6 s), and GSAP now loads after first paint (work before the observed LCP inflated Lantern's
+  simulated LCP). Local Lighthouse (mobile, 3 runs): home Perf 90 / 95 / 94 · A11y 100 · BP 100 ·
+  SEO 100 · LCP 2.8 s simulated (observed ≈ 0.7 s) · CLS 0–0.023 · TBT 100–250 ms (GSAP + timeline).
+- Initial home JS 189 KB gz (+3 KB).
 
 ## Inputs needed from Mohamed (before Phase 7, SPEC §11)
 
