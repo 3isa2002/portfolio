@@ -1,0 +1,35 @@
+---
+# From the event-checkin-qr README (2026-11-09). TODO(mohamed): add the year (and the event, if
+# you can name it).
+title: "Event Check-in (QR)"
+slug: "event-checkin"
+summary: "A Flask web app used at a real event: scan or type an invitation code at each gate, with no double check-ins"
+category: ["Web"]
+featured: false
+order: 11
+status: "shipped"
+role: "Solo — built for a real event"
+stack: ["Python", "Flask", "JavaScript", "html5-qrcode"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/event-checkin-qr"
+  live: ""
+  video: ""
+---
+
+## Problem
+
+Guests arriving at several gates, each with their own invitation codes, and no budget or time for
+dedicated event software.
+
+## Approach
+
+A small Flask app the gate staff open in a browser: scan a QR code with the device camera
+(html5-qrcode) or type the code, pick the gate, and see immediately whether the code was already
+used, and when and at which gate. A live table lists everyone checked in, and the form is
+validated on the server.
+
+## Result
+
+Built in an evening and used at the actual event. Check-ins are stored in a plain file, which was
+right for one event with one machine per gate, and is the first thing to change for anything bigger.

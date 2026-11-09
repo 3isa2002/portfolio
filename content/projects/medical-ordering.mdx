@@ -1,0 +1,38 @@
+---
+# From the medical-equipment-ordering-system README (2026-11-09). TODO(mohamed): add the year.
+title: "Medical Equipment Ordering System"
+slug: "medical-ordering"
+summary: "A multi-role Java EE ordering system for medical equipment, later hardened with parameterized SQL and hashed passwords"
+category: ["Web"]
+featured: false
+order: 13
+status: "prototype"
+role: "Team project — authentication and email modules; later security hardening"
+stack: ["Java EE", "JSP", "Servlets", "Apache Derby", "BCrypt"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/medical-equipment-ordering-system"
+  live: ""
+  video: ""
+---
+
+## Problem
+
+A Software Engineering course project: a working multi-role web application for ordering medical
+equipment (crutches, masks, blood pressure and sugar monitors), built with Java EE.
+
+## Approach
+
+Customers, staff and administrators share one login and land on their own pages. Every entity has
+its own DAO, 13 servlets handle the flows, and customers are emailed when a product becomes
+available (an observer pattern).
+
+My modules were the login/authentication controller and the email notification system. Later I
+went back through the whole codebase to fix security issues: every SQL query parameterized,
+credentials moved out of the source, the login form switched to POST, and passwords hashed with
+BCrypt.
+
+## Result
+
+A team project where my part is visible in the code itself (the `@author` tags), plus the security
+pass that made it fit to publish.

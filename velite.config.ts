@@ -25,7 +25,8 @@ const projects = defineCollection({
       category: s.array(s.enum(CATEGORIES)).min(1),
       featured: s.boolean().default(false),
       order: s.number().int().default(99),
-      year: s.number().int().min(2000).max(2100),
+      /** Optional: left out when the build year is not known (never guessed). */
+      year: s.number().int().min(2000).max(2100).optional(),
       status: s.enum(STATUSES),
       role: s.string().min(1),
       stack: s.array(s.string()).default([]),

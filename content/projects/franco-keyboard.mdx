@@ -1,0 +1,39 @@
+---
+# From the arabic-voice-to-franco-keyboard README (2026-11-09). TODO(mohamed): add the year and a
+# screenshot of the keyboard.
+title: "Arabic Voice → Franco Keyboard"
+slug: "franco-keyboard"
+summary: "An Android keyboard: speak Arabic, and it types Franco (Arabizi) in any app, live"
+category: ["Mobile"]
+featured: false
+order: 8
+status: "in-progress"
+role: "Solo — personal project"
+stack: ["Flutter", "Kotlin", "Dart", "Android IME", "Speech recognition"]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/arabic-voice-to-franco-keyboard"
+  live: ""
+  video: ""
+---
+
+## Problem
+
+Many Egyptians chat in Franco: Arabic words written with Latin letters and digits (`3` for `ع`,
+`7` for `ح`). Typing it letter by letter is slow; I wanted to just speak Arabic and get Franco.
+
+## Approach
+
+A real system keyboard (an Android input method), available in any app with a text field:
+
+- Tap the mic and speak; Android's speech recognizer (Egyptian Arabic) transcribes it.
+- The recognized Arabic is converted to Franco as you speak, shown as composing text and committed
+  when you stop. The character mapping (`ع → 3`, `ح → 7`, `خ → 5`, `ء → 2`…) is unit-tested.
+- The keyboard itself is a Kotlin `InputMethodService`; its UI is Flutter, connected through
+  platform channels. A setup screen grants the microphone permission and opens the keyboard
+  settings.
+
+## Result
+
+It works as an everyday keyboard on my phone. It isn't on the Play Store yet: the release build
+still needs its own signing key.

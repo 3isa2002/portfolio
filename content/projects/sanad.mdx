@@ -1,0 +1,82 @@
+---
+# From the sanad-support-rag README (2026-11-09).
+title: "Sanad — Arabic Support Assistant"
+slug: "sanad"
+summary: "A local, bilingual RAG support assistant that always cites its source and hands off to a human instead of guessing"
+category: ["AI"]
+featured: true
+order: 2
+year: 2026
+status: "prototype"
+role: "Solo — retrieval, LLM pipeline, API and evaluation"
+stack: ["Python", "RAG", "Ollama", "FastAPI", "SQLite", "Docker", "pytest"]
+cover: "cover.webp"
+gallery:
+  - {
+      src: "screenshot.webp",
+      caption: "The web chat, answering from the policy docs with cited sources",
+    }
+links:
+  github: "https://github.com/3isa2002/sanad-support-rag"
+  live: ""
+  video: ""
+metrics:
+  - { label: "Tests", value: "80" }
+  - { label: "Golden questions", value: "37" }
+  - { label: "Languages", value: "2" }
+---
+
+## Problem
+
+An online marketplace's customers ask about returns, orders and listings in Arabic (often Egyptian
+dialect) and English. A support bot that invents a policy is worse than no bot: every answer has to
+come from the real help docs, and anything it isn't sure about has to reach a person.
+
+## Approach
+
+Sanad answers from the help docs and policies with retrieval-augmented generation, runs fully
+locally on Ollama (`qwen2.5` for chat, `bge-m3` for embeddings), and calls the marketplace backend
+for live order and listing status.
+
+<Architecture
+  nodes={[
+    { id: "msg", label: "Customer message", note: "Arabic / English", kind: "data" },
+    { id: "lang", label: "Language + intent", note: "human? order ID?", kind: "ai" },
+    { id: "ret", label: "Hybrid retriever", note: "dense + BM25, RRF", kind: "ai" },
+    { id: "api", label: "Backend API", note: "orders, listings", kind: "data" },
+    { id: "llm", label: "Ollama chat", note: "grounded prompt", kind: "ai" },
+    { id: "out", label: "Answer + sources", note: "cited [1]", kind: "data" },
+    { id: "ticket", label: "Handoff ticket", note: "SQLite", kind: "data" },
+  ]}
+  edges={[
+    ["msg", "lang"],
+    ["lang", "ret"],
+    ["lang", "api"],
+    ["lang", "ticket"],
+    ["ret", "llm"],
+    ["llm", "out"],
+    ["llm", "ticket"],
+  ]}
+  title="Sanad: a message is classified, then either answered from retrieved policy passages by a grounded local LLM with citations, answered from the backend API, or handed off to a human as a ticket."
+/>
+
+- **Arabic-aware retrieval:** text is normalized (alef, yaa and taa-marbuta forms, diacritics,
+  tatweel, Arabic-Indic digits) so dialect questions like `ازاي أرجّع منتج؟` match the policy docs.
+  Dense embeddings and an Arabic-aware BM25 are fused with Reciprocal Rank Fusion.
+- **Grounded answers:** the model may use only the numbered passages and must cite them; the API
+  returns structured sources (document, section, URL, score).
+- **Handoff instead of hallucination:** low retrieval confidence, a `HANDOFF` reply, an answer with
+  no valid citation, a failing model or backend, or a customer asking for a person all open a
+  ticket and tell the customer its number.
+- **Backend tools:** order and listing IDs (`ORD-10023`, `الطلب رقم ١٠٠٢٥`) are detected
+  deterministically and answered from bilingual templates, so statuses and dates are never
+  paraphrased by the model.
+
+## Result
+
+A FastAPI service with an RTL-aware web chat, admin endpoints and a Docker Compose setup. All 80
+tests run offline (a hash embedder and an extractive fallback replace Ollama), and `sanad eval`
+scores a 37-question golden set on retrieval hit@k, answer rate, handoff precision/recall and
+tool-routing accuracy.
+
+<Gallery />

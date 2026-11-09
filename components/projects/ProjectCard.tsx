@@ -131,7 +131,9 @@ export function ProjectCard({ project, wide, headingLevel = 3 }: ProjectCardProp
           {project.category.map((c) => (
             <CategoryBadge key={c} category={c} />
           ))}
-          <span className="ms-auto font-mono text-xs text-dim">{project.year}</span>
+          {project.year !== undefined && (
+            <span className="ms-auto font-mono text-xs text-dim">{project.year}</span>
+          )}
         </div>
 
         <Heading className="font-display text-h3 font-semibold">

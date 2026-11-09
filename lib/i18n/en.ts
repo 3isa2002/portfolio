@@ -8,7 +8,7 @@ export const en = {
     description:
       "Mohamed Eissa, a Cairo-based AI Engineer (Generative AI & LLMs) who builds the embedded and IoT devices his models run on.",
     projectsTitle: "Projects",
-    projectsDescription: "Every project: AI, embedded systems, IoT and web.",
+    projectsDescription: "Every project: AI, embedded systems, IoT, web and mobile.",
   },
   a11y: {
     skipToContent: "Skip to content",

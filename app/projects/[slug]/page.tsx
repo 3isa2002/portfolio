@@ -108,10 +108,12 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
             <p className="mt-4 max-w-2xl text-lg text-dim">{project.summary}</p>
 
             <dl className="mt-8 grid grid-cols-2 gap-6 border-y border-line py-6 sm:grid-cols-4">
-              <div>
-                <dt className="label text-dim">{t.projects.year}</dt>
-                <dd className="mt-1 font-mono">{project.year}</dd>
-              </div>
+              {project.year !== undefined && (
+                <div>
+                  <dt className="label text-dim">{t.projects.year}</dt>
+                  <dd className="mt-1 font-mono">{project.year}</dd>
+                </div>
+              )}
               <div>
                 <dt className="label text-dim">{t.projects.status}</dt>
                 <dd className="mt-1 font-mono">{t.projects.statuses[project.status]}</dd>

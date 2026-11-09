@@ -1,0 +1,63 @@
+---
+# From the electro-pi-quickbite README (2026-11-09). TODO(mohamed): confirm your role (solo or team).
+title: "QuickBite"
+slug: "quickbite"
+summary: "A bilingual food-delivery web app: cart, checkout and order tracking, with an admin dashboard for orders and drivers"
+category: ["Web"]
+featured: true
+order: 6
+year: 2026
+status: "shipped"
+role: "Full-stack — Next.js frontend and FastAPI backend"
+stack:
+  [
+    "Next.js",
+    "TypeScript",
+    "Tailwind CSS",
+    "Framer Motion",
+    "next-intl",
+    "FastAPI",
+    "SQLAlchemy",
+    "PostgreSQL",
+  ]
+cover: "cover.webp"
+links:
+  github: "https://github.com/3isa2002/electro-pi-quickbite"
+  live: "https://electro-pi-quickbite.vercel.app"
+  video: ""
+---
+
+## Problem
+
+A food-delivery service needs a storefront customers enjoy using, in Arabic and English, and an
+admin side that keeps orders and drivers moving.
+
+## Approach
+
+A Next.js (App Router) frontend and a FastAPI backend:
+
+- **Customers:** English (LTR) and Arabic (RTL) with next-intl, a cart and checkout, live order
+  tracking with cancellation of pending orders, and JWT sign-in.
+- **Admins:** a localized dashboard to move orders through Pending, Preparing, Out for delivery and
+  Delivered, assign drivers inline, and watch revenue and active orders.
+- **Backend:** FastAPI with SQLAlchemy, SQLite locally and PostgreSQL in production, passwords
+  hashed with bcrypt.
+
+<Architecture
+  nodes={[
+    { id: "web", label: "Next.js storefront", note: "EN / AR", kind: "data" },
+    { id: "admin", label: "Admin dashboard", note: "orders, drivers", kind: "data" },
+    { id: "api", label: "FastAPI", note: "JWT auth", kind: "data" },
+    { id: "db", label: "PostgreSQL", note: "SQLAlchemy", kind: "data" },
+  ]}
+  edges={[
+    ["web", "api"],
+    ["admin", "api"],
+    ["api", "db"],
+  ]}
+  title="QuickBite: the bilingual storefront and the admin dashboard talk to a FastAPI backend over PostgreSQL."
+/>
+
+## Result
+
+Live on Vercel: open the demo from the button above.

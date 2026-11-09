@@ -1,67 +1,75 @@
 ---
-# From the CVs (2026-11-09). TODO(mohamed): confirm status; add a GitHub link if the code is public,
-# a demo video (links.video) and photos (gallery) when you have them.
+# From the IoT CV (hardware) and the robot-desktop repo (backend), 2026-11-09.
+# The public backend uses keyword rules, not an LLM; the CV mentions Gemini, but no Gemini code is
+# public. TODO(mohamed): if the ESP32 firmware calls Gemini, publish it and add it here.
 title: "Wanas"
 slug: "wanas"
-summary: "An ESP32-S3 desk assistant that turns voice and touch into actions through the Gemini API"
+summary: "An Arabic-speaking ESP32-S3 desk robot with a FastAPI brain: it listens, answers and talks back in Egyptian Arabic"
 category: ["AI", "Embedded", "IoT"]
 featured: true
 order: 1
 year: 2026
 status: "prototype"
-role: "Solo — hardware, firmware and LLM integration"
-stack: ["C/C++", "ESP32-S3", "Gemini API", "Python", "SPI", "I2S", "Wi-Fi"]
+role: "Solo — hardware, firmware and backend"
+stack: ["C/C++", "ESP32-S3", "Python", "FastAPI", "SPI", "I2S", "Wi-Fi", "edge-tts"]
 cover: "cover.webp"
 links:
-  github: ""
+  github: "https://github.com/3isa2002/robot-desktop"
   live: ""
   video: ""
 metrics:
   - { label: "Peripherals", value: "4" }
   - { label: "I2S ports", value: "2" }
-  - { label: "Supply rails", value: "3.3 V + 5 V" }
+  - { label: "API endpoints", value: "3" }
 ---
 
 ## Problem
 
-I wanted a desk companion that understands plain speech instead of fixed commands, and answers with
-sound and a face on a small screen. The catch: it had to run on a microcontroller, inside its memory
-and timing limits, with the language understanding happening in the cloud.
+I wanted a desk companion that actually talks back in Egyptian Arabic instead of the usual English
+assistant voices: something with a face on a small screen, a microphone and a speaker, that answers
+when spoken to.
 
 ## Approach
 
-Voice and touch come in on an ESP32-S3. The request goes over Wi-Fi to the Gemini API (HTTPS/REST),
-which detects the intent of the natural-language command; each detected intent maps to a device
-response or action.
+The robot is an ESP32-S3 with four peripherals: a GC9A01 round display on SPI, an INMP441 MEMS
+microphone and a MAX98357A Class-D amplifier on two separate I2S ports, and a TTP223 touch sensor.
+I calculated the 3.3 V / 5 V power budget, added capacitors to stop Wi-Fi brownout resets, and
+documented the wiring map.
+
+Its "brain" is a FastAPI backend on the local network. It takes a typed message or a recorded voice
+clip, transcribes speech with the Google Web Speech API, picks a reply, and answers with the text,
+a synthesized Egyptian Arabic voice (edge-tts, cached on disk so repeated replies are instant) and
+an animation state for the robot's face.
 
 <Architecture
   nodes={[
     { id: "mic", label: "INMP441 mic", note: "I2S", kind: "hw" },
-    { id: "touch", label: "TTP223 touch", note: "GPIO", kind: "hw" },
     { id: "esp", label: "ESP32-S3", note: "C/C++ firmware", kind: "hw" },
-    { id: "llm", label: "Gemini API", note: "intent detection", kind: "ai" },
-    { id: "intent", label: "Intent → action", note: "device response", kind: "ai" },
-    { id: "display", label: "GC9A01 display", note: "SPI", kind: "hw" },
+    { id: "api", label: "FastAPI backend", note: "/chat · /chat/audio", kind: "data" },
+    { id: "stt", label: "Speech-to-text", note: "Google Web Speech", kind: "ai" },
+    { id: "brain", label: "Intent engine", note: "keyword rules", kind: "ai" },
+    { id: "tts", label: "Arabic voice", note: "edge-tts, cached", kind: "ai" },
+    { id: "display", label: "GC9A01 display", note: "face animation", kind: "hw" },
     { id: "amp", label: "MAX98357A amp", note: "I2S → speaker", kind: "hw" },
   ]}
   edges={[
     ["mic", "esp"],
-    ["touch", "esp"],
-    ["esp", "llm"],
-    ["llm", "intent"],
-    ["intent", "display"],
-    ["intent", "amp"],
+    ["esp", "api"],
+    ["api", "stt"],
+    ["stt", "brain"],
+    ["brain", "tts"],
+    ["brain", "display"],
+    ["tts", "amp"],
   ]}
-  title="Wanas: microphone and touch input reach the ESP32-S3, which calls the Gemini API over Wi-Fi; the detected intent drives the round display and the speaker."
+  title="Wanas: the ESP32-S3 sends speech to a FastAPI backend, which transcribes it, picks a reply and returns an Arabic voice clip for the speaker plus a face animation for the display."
 />
 
-The hardware is four peripherals around the ESP32-S3: a GC9A01 round display on SPI, an INMP441
-MEMS microphone and a MAX98357A Class-D amplifier on two separate I2S ports, and a TTP223 touch
-sensor. I calculated the 3.3 V / 5 V power budget, added capacitors to stop Wi-Fi brownout resets,
-and documented the wiring map.
+The intent engine handles greetings, jokes, the time, questions about who Wanas is, and live
+prayer times for your location. A small browser page tests the whole flow from a laptop when the
+hardware isn't on the desk.
 
 ## Result
 
-A working desk device that responds to natural-language commands with sound and an animated face,
-handling sensor input, Wi-Fi communication and response latency within the board's memory and
-timing constraints.
+A working desk robot that answers in Egyptian Arabic with its own voice and face. The intent engine
+is deliberately simple, keyword rules rather than a language model, so it covers the set of things
+Wanas is meant to say and nothing beyond it.

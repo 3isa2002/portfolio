@@ -287,10 +287,29 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
 - Verified: no placeholder text in any built page; no console errors on all pages; Lighthouse (mobile)
   home 89–95, case studies 93–94 (one noisy 76 run: an unattributable browser task), A11y/BP/SEO 100.
 
+### Phase 7 — GitHub projects (2026-11-10)
+
+- Source: Mohamed's public repos on github.com/3isa2002 (READMEs and code). Nothing invented; facts
+  the repos don't give (years, some roles) are left empty with hidden `TODO(mohamed)` notes.
+- 10 new case studies: Sanad (local bilingual RAG, featured), QuickBite (featured, live demo),
+  Gaming Lounge Manager (featured), Face Attendance with Anti-Spoofing (part of the MAVS graduation
+  project), Engineering Estimations Archive, Franco Keyboard, Event Check-in, Fahemny LMS, Medical
+  Equipment Ordering, Arabic Subjects Quiz. 14 projects in total.
+- Wanas rewritten from its public repo (robot-desktop): the Gemini claim was dropped from the case
+  study, the bio and the timeline because no Gemini code is public (TODO for Mohamed: publish the
+  firmware if it calls Gemini).
+- Schema: `year` is optional (repos were uploaded in bulk, so the commit dates aren't real years);
+  new "Mobile" category (neutral accent), separate from "Web".
+- Media: Sanad cover + gallery from the repo screenshot; QuickBite cover from the live site; the
+  other 8 covers are illustrated (sharp-rendered SVG, 16–23 KB each).
+- Skills: added RAG, Ollama, FastAPI, Kotlin, PHP, Docker so the graph links them (37 links).
+- Verified: all 16 pages load with no console errors, no 4xx and no broken images; initial home JS
+  198.3 KB gz (unchanged); Lighthouse (mobile) home 92 / 93 / 91, /projects 91, A11y/BP/SEO 100.
+
 ## Inputs needed from Mohamed (SPEC §11)
 
 - [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)
-- [x] Final project list (from the CVs) — still open: GitHub/live links, Smart Parking's year
+- [x] Final project list (CVs + GitHub repos) — still open: years for 6 projects, Smart Parking's year
 - [ ] Media per project (photos/screenshots, hover clip, demo video, `.glb`) — illustrated covers for now
 - [x] Both CV PDFs (AI Engineer, Embedded & IoT)
 - [x] Contact links: email, GitHub, LinkedIn (no WhatsApp: decided)
