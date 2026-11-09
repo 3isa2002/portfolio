@@ -1,18 +1,26 @@
 /**
  * UI sound (SPEC §4, §7): on by default (Mohamed's decision, 2026-11-09), toggled from the navbar
- * or the command palette, remembered in localStorage. Browsers only let a page play audio after
- * the visitor has interacted with it (a click, tap or key), so the first sounds come after that;
- * `unlockAudio` resumes the audio context on that first interaction. Every sound is synthesized with the Web Audio API, so
- * there are no audio files to download (SPEC: "files under 50 KB" — here, zero).
+ * or the command palette, remembered in localStorage. Every sound is synthesized with the Web
+ * Audio API, so there are no audio files to download.
  *
  *   tick  a short, soft click for hovers and confirmations
- *   hum   a low boot hum with a rising tone (with the boot intro, and when sound is switched on)
+ *   hum   a low boot hum with a rising "power-on" tone
+ *
+ * Browsers keep a page silent until the visitor's first click, tap or key (autoplay policy), so:
+ * - the navbar icon shows sound as active only once audio can really play (`soundActive`);
+ * - the moment audio becomes available, the hum plays once, so that first interaction is heard;
+ * - a press on the sound button that is what unlocked audio does not also switch sound off
+ *   (`justUnlocked`).
  */
 const KEY = "sound";
+/** Fired when the setting changes or audio becomes (un)available. */
 export const SOUND_EVENT = "sound:change";
 
 let ctx: AudioContext | null = null;
 let lastTick = 0;
+/** Whether the hum has greeted the visitor since audio last became available / sound was enabled. */
+let greeted = false;
+let unlockedAt = -Infinity;
 
 export function soundEnabled(): boolean {
   try {
@@ -20,6 +28,16 @@ export function soundEnabled(): boolean {
   } catch {
     return true;
   }
+}
+
+/** Sound is on and the browser lets the page play it right now. */
+export function soundActive(): boolean {
+  return soundEnabled() && ctx?.state === "running";
+}
+
+/** True for a moment after audio became available: that click was the unlock, not a toggle. */
+export function justUnlocked(): boolean {
+  return performance.now() - unlockedAt < 700;
 }
 
 /** Call on the visitor's first click / tap / key: browsers allow audio only after a gesture. */
@@ -33,22 +51,54 @@ export function setSound(on: boolean) {
   } catch {
     // Storage blocked: the setting lasts for this page only.
   }
+  if (on) {
+    greeted = false;
+    audio();
+    greet();
+  }
   window.dispatchEvent(new CustomEvent(SOUND_EVENT, { detail: on }));
-  if (on) play("hum");
+}
+
+function greet() {
+  if (greeted || !soundEnabled() || ctx?.state !== "running") return;
+  greeted = true;
+  playNow(ctx, "hum");
 }
 
 function audio(): AudioContext | null {
   if (typeof window === "undefined" || !("AudioContext" in window)) return null;
-  ctx ??= new AudioContext();
-  // Browsers start the context suspended until a user gesture; resume when we can.
-  if (ctx.state === "suspended") void ctx.resume();
+  if (!ctx) {
+    const ac = new AudioContext();
+    ctx = ac;
+    ac.addEventListener("statechange", () => {
+      if (ac.state === "running") unlockedAt = performance.now();
+      greet();
+      window.dispatchEvent(new CustomEvent(SOUND_EVENT));
+    });
+    // Created during a gesture, a context can start out running (no statechange follows).
+    if (ac.state === "running") {
+      unlockedAt = performance.now();
+      queueMicrotask(() => {
+        greet();
+        window.dispatchEvent(new CustomEvent(SOUND_EVENT));
+      });
+    }
+  }
+  // Suspended until the browser allows audio; resume() takes effect after a gesture.
+  if (ctx.state === "suspended") void ctx.resume().catch(() => {});
   return ctx;
 }
 
 export function play(kind: "tick" | "hum") {
   if (!soundEnabled()) return;
   const ac = audio();
+  // Not allowed yet: stay silent. The first interaction plays the hum (see greet).
   if (!ac || ac.state !== "running") return;
+  if (kind === "hum") greeted = true;
+  playNow(ac, kind);
+}
+
+function playNow(ac: AudioContext, kind: "tick" | "hum") {
   const now = ac.currentTime;
   const out = ac.createGain();
   out.connect(ac.destination);
