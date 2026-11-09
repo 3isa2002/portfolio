@@ -46,6 +46,9 @@ export function BackTransitions() {
         await changed;
         name(true);
       });
+      // If React starts its own view transition for the same update, the browser skips this one;
+      // the DOM update still happens and the morph runs in React's, so the rejection is expected.
+      transition.ready.catch(() => {});
       void transition.finished.finally(() => name(false));
     };
 
