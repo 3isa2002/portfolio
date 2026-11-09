@@ -1,3 +1,12 @@
 # Cloudflare Pages redirects (SPEC §5 routes). Short share links for the two CVs.
 /cv/ai          /cv/mohamed-eissa-ai.pdf          302
 /cv/embedded    /cv/mohamed-eissa-embedded.pdf    302
+
+# Placeholder projects removed in Phase 7: send old links to the project list
+# (Cloudflare would otherwise keep serving the old pages for up to a week).
+/projects/reply-twin          /projects    301
+/projects/reply-twin/*        /projects    301
+/projects/motor-controller    /projects    301
+/projects/motor-controller/*  /projects    301
+/projects/sensor-hub          /projects    301
+/projects/sensor-hub/*        /projects    301
