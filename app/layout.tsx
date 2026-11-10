@@ -86,6 +86,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Konami />
         {/* Swept across the screen by the page transition (see .scanline in globals.css). */}
         <div aria-hidden className="scanline" />
+        {/* Visit beacon for the private visits portal (public/v.js): not part of the app's JS, and
+            only fetched once the page has finished loading. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `addEventListener("load",function(){var s=document.createElement("script");s.src="/v.js";document.head.appendChild(s)})`,
+          }}
+        />
       </body>
     </html>
   );
