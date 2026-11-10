@@ -1,0 +1,120 @@
+---
+# From the Printora repo (README, docs/ARCHITECTURE.md, releases) and the live site
+# (2026-11-10). The repo is private. The gallery shots are the app's own screens with demo data,
+# as shown on printora-site.vercel.app.
+# TODO(mohamed): confirm your role (the repo has a second commit author), and whether the repo
+# can be linked (links.github).
+title: "Printora"
+slug: "printora"
+summary: "A subscription Windows app for print shops: finds every printer, splits big jobs across machines, tracks every sheet"
+category: ["Web"]
+featured: false
+order: 7
+year: 2026
+status: "shipped"
+role: "Design and development — Windows agent, license server, admin portal and site"
+stack:
+  [
+    "C#",
+    ".NET 8",
+    "ASP.NET Core",
+    "EF Core",
+    "PostgreSQL",
+    "React",
+    "TypeScript",
+    "Vite",
+    "WebView2",
+    "IPP",
+    "SNMP",
+    "Neon",
+    "Render",
+    "Vercel",
+  ]
+cover: "cover.webp"
+gallery:
+  - {
+      src: "split.webp",
+      caption: "One file on three machines: 120 copies split 40 / 40 / 40, with the time it will take",
+    }
+  - {
+      src: "stop.webp",
+      caption: "“Where did it stop?”: 20 copies came out whole, copy 21 stopped after page 37; resume from that sheet or move the rest to another printer",
+    }
+  - {
+      src: "printers.webp",
+      caption: "Printing now, and the printers found on USB, Wi-Fi and the network through four discovery paths",
+    }
+  - {
+      src: "orders.webp",
+      caption: "Orders: each one with its customer, files, sheets and price, split over the printers that did it",
+    }
+links:
+  github: ""
+  live: "https://printora-site.vercel.app"
+  video: ""
+metrics:
+  - { label: "Discovery paths", value: "4" }
+  - { label: "Verification levels", value: "A–D" }
+  - { label: "Latest release", value: "v1.2.0" }
+  - { label: "Windows", value: "10 / 11" }
+---
+
+## Problem
+
+A copy and print shop runs several printers of different brands, on USB, Wi-Fi and the network. A
+big order ties up one machine or gets split by hand, and when a printer jams in the middle nobody
+knows exactly which copy and page it stopped at, so sheets get printed twice or go missing. The
+product also had to be sold as a subscription, which means the program on the shop's counter PC
+must stop working when the subscription does.
+
+## Approach
+
+Printora is three parts: a Windows agent at the shop that talks to the printers, a central license
+server, and the web interfaces. It is a rewrite of an earlier local Node.js version into .NET and
+React.
+
+<Architecture
+  nodes={[
+    { id: "ui", label: "Operator UI", note: "React · in WebView2", kind: "data" },
+    { id: "agent", label: ".NET 8 agent", note: "Windows Service", kind: "data" },
+    { id: "printers", label: "Printers", note: "IPP · queue · RAW · SNMP", kind: "hw" },
+    { id: "admin", label: "Admin portal", note: "React · Vercel", kind: "data" },
+    { id: "server", label: "License server", note: "ASP.NET Core · Render", kind: "data" },
+    { id: "db", label: "PostgreSQL", note: "Neon · EF Core", kind: "data" },
+  ]}
+  edges={[
+    ["ui", "agent"],
+    ["agent", "printers"],
+    ["agent", "server"],
+    ["admin", "server"],
+    ["server", "db"],
+  ]}
+  title="Printora: the operator UI runs inside the Windows agent, which prints to the shop's printers and checks its signed license with the license server; the admin portal manages subscriptions on the same server, which stores them in PostgreSQL."
+/>
+
+- **Every printer, without a model list.** The agent looks for printers on four paths at once
+  (the Windows spooler, mDNS, WSD and a network scan) and identifies each by serial number, not by
+  IP address. It prints over IPP, the Windows queue or RAW 9100, whichever the printer supports
+  best, and reads counters, toner, trays and faults over SNMP. Each printer gets a verification
+  level from A to D that says how far its own page count can be trusted.
+- **One order, several machines.** A large job is split over the chosen printers with one command,
+  and every batch is followed to its last sheet.
+- **"Where did it stop?"** When a printer stops, the app shows the copy and the page it reached,
+  and the job continues from that sheet or moves to another printer.
+- **A license that cannot be copied.** The agent does not run without an active subscription. It
+  activates against the server and receives an ES256-signed license token tied to a hashed hardware
+  fingerprint; it checks the signature offline, asks the server again at intervals, and has a grace
+  period for when the shop is offline.
+- **Signed self-update.** The server announces a new version in a token signed with the same key.
+  The agent installs the download only if its size and SHA-256 match the signed announcement, waits
+  for the jobs in flight to finish, installs silently and reopens on the same screen.
+- **One language per side.** C# for the agent, the server and their shared contracts; TypeScript
+  and React (Vite) for the operator UI, the admin portal and the public site.
+
+## Result
+
+Released: v1.0.0 on 31 October 2026 and v1.2.0 on 4 November 2026, with the Windows installer
+downloadable from the site. The admin portal manages subscriptions and the devices bound to each
+one, and the public site has a simulator of how a job is split across machines.
+
+<Gallery />

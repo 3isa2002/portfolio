@@ -342,6 +342,30 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   paths; no prompt when the browser allows audio; no prompt when coming back home. Lighthouse
   main vs this branch, interleaved on the same (busy) machine: 81 / 80 vs 88.
 
+### Home filter shows the whole category + three more projects (2026-11-10)
+
+- Home filter (Mohamed's decision): "All" still shows the 6 featured projects with "See all
+  projects" for the rest; picking a category (AI, Embedded, IoT, Web, Mobile) now shows every
+  project of that category on the home page itself. `ProjectGrid` takes the full list plus the
+  featured slugs.
+- Repos Mohamed named: event-checkin-qr was already on the site. Three were missing and are
+  private, so they have no GitHub link (hidden `TODO(mohamed)` notes):
+  - Printora: subscription Windows app for print shops (.NET 8 agent, license server, React UIs).
+    Cover and gallery from the live site; the gallery shots are the app's own screens with demo data.
+  - Guesstrap: Arabic online party word game (Next.js, Supabase Edge Functions, RLS). Cover and
+    how-to-play cards from the live game.
+  - Rawdati: nursery daily notebook (Next.js, Supabase). Its deployment is offline, so the cover is
+    illustrated and the status is "prototype".
+  - fayze was not added: the repo holds only a README and one product, not enough for a case study.
+- 17 projects in total. Printora and Guesstrap sit right after the featured six (orders 7 and 8).
+  Roles on Printora and Rawdati are worded without "solo" until Mohamed confirms them.
+- Skills: added React (Wanas dashboard, Printora, Guesstrap).
+- Verified (desktop and phone): "All" = 6 featured; each category shows all of its projects
+  (AI 4, Embedded 2, IoT 2, Web 9, Mobile 4), also on a direct `/?c=` load; the three new pages
+  render with no console errors, broken images or overflow. Initial home JS 199.0 KB gz.
+  Lighthouse (mobile): home 83 / 93 / 95 (one noisy run), /projects 91, new pages 93–95,
+  A11y/BP/SEO 100, CLS ≤ 0.03.
+
 ## Inputs needed from Mohamed (SPEC §11)
 
 - [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)

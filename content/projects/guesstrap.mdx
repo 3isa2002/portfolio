@@ -1,0 +1,109 @@
+---
+# From the guesstrap repo (docs/HANDOFF.md, docs/REVAMP.md, CLAUDE.md) and the live game
+# (2026-11-10). The repo is private for now:
+# TODO(mohamed): make it public if you want it linked, then set links.github to
+# https://github.com/3isa2002/guesstrap. Gameplay screenshots (a round, the reveal) would make a
+# better gallery than the how-to-play cards.
+title: "Guesstrap"
+slug: "guesstrap"
+summary: "An Arabic online party word game for 3–6 friends: call words, set traps and work out everyone's secret rule"
+category: ["Web"]
+featured: false
+order: 8
+year: 2026
+status: "shipped"
+role: "Solo — game design, rules engine, backend and web app"
+stack:
+  [
+    "Next.js",
+    "React",
+    "TypeScript",
+    "Tailwind CSS",
+    "Motion",
+    "Supabase",
+    "PostgreSQL",
+    "Deno",
+    "Zod",
+    "Zustand",
+    "Turborepo",
+    "Vitest",
+    "pgTAP",
+    "Web Audio",
+  ]
+cover: "cover.webp"
+gallery:
+  - {
+      src: "how-to-play-1.webp",
+      caption: "How to play, steps 1 and 2: every player holds a secret rule, such as “words starting with م”; each round you call one word and set a trap on another",
+    }
+  - {
+      src: "how-to-play-2.webp",
+      caption: "Steps 3 and 4: the bonus for calling on your own rule goes to a hidden score shown only at the end; read what the others call to work out their rules",
+    }
+links:
+  github: ""
+  live: "https://guesstrap.vercel.app"
+  video: ""
+metrics:
+  - { label: "Players", value: "3–6" }
+  - { label: "Words", value: "969" }
+  - { label: "Secret rules", value: "36" }
+  - { label: "Database tests", value: "37" }
+---
+
+## Problem
+
+I wanted a party game in Egyptian Arabic that a group of friends can play together, each on their
+own phone. It is a bluffing game, and a bluffing game falls apart the moment someone can peek: any
+secret that reaches the browser can be read there. So nobody, not even a player watching the network
+traffic, may see another player's secret before the reveal.
+
+## Approach
+
+Each of 3 to 6 players holds a secret rule (for example "words starting with م"). Every round shows
+a fresh grid of words, and within a few seconds each player calls one word and sets a trap on
+another. A call that lands on a trap costs points and pays the trapper. A call that fits your own
+rule pays extra, but the extra goes to a hidden score, so the visible points never give your rule
+away. The final reveal flips every rule, adds the hidden scores, and the ranking can turn over.
+Gold rounds, sudden death and power cards change the stakes, and bots can fill an empty seat.
+
+<Architecture
+  nodes={[
+    { id: "web", label: "Next.js web app", note: "Arabic, RTL · UI only", kind: "data" },
+    { id: "client", label: "Game client", note: "store · server clock", kind: "data" },
+    { id: "fn", label: "Edge Functions", note: "Deno · Zod-checked", kind: "data" },
+    { id: "engine", label: "Rules engine", note: "pure TypeScript", kind: "data" },
+    { id: "db", label: "Postgres", note: "RLS · Realtime", kind: "data" },
+  ]}
+  edges={[
+    ["web", "client"],
+    ["client", "fn"],
+    ["fn", "engine"],
+    ["fn", "db"],
+  ]}
+  title="Guesstrap: the Next.js app only draws what the game client gives it; the client sends moves to Supabase Edge Functions, which check them, run the rules engine and write to Postgres, where row-level security keeps every secret hidden until the reveal."
+/>
+
+- **The server is the only referee.** The UI never computes a score. Moves go to Supabase Edge
+  Functions, a round is resolved in one database transaction, and row-level security on all 13
+  tables keeps each player's rule, call and trap unreadable by the others until the reveal. 37
+  pgTAP tests prove the secrets stay secret and open up when the game ends.
+- **One rules engine, two runtimes.** The engine is pure TypeScript with no dependencies; the clock
+  and the random seed are inputs. The same code is tested with Vitest and runs on Deno inside the
+  Edge Functions.
+- **Layers the linter enforces.** A pnpm and Turborepo monorepo: the web app talks to the game
+  client, the game client to the engine and the shared Zod protocol. The imports each layer may use
+  are an ESLint rule with its own test.
+- **Content as data.** 969 words and 36 rules, each rule matching at least 50 words, checked by a
+  validator; Arabic spelling variants are normalized so they match. Every tunable number lives in a
+  config table, and an admin portal edits words, rules and settings on the live game.
+- **Game feel.** A countdown synced to the server clock, a staged reveal, sounds synthesized with
+  Web Audio (no audio files), haptics, and an installable PWA you join with a room code or a link.
+
+## Result
+
+Live and playable at guesstrap.vercel.app. It was built in 12 phases, each with its own acceptance
+tests, and then revamped: a security hardening pass, a new toy-like design system and the admin
+portal. CI runs lint, type checks, tests and the production build across the whole monorepo.
+
+<Gallery />

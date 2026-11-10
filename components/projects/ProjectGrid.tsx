@@ -7,7 +7,15 @@ import { t } from "@/lib/i18n";
 import type { ProjectCardData } from "@/lib/projects";
 import { ProjectCard } from "./ProjectCard";
 
-type GridProps = { projects: ProjectCardData[]; headingLevel?: 2 | 3 };
+type GridProps = {
+  projects: ProjectCardData[];
+  headingLevel?: 2 | 3;
+  /**
+   * Home page: the slugs shown under "All". A category pill still shows every project in that
+   * category, so filtering on the home page never needs a trip to /projects.
+   */
+  featured?: string[];
+};
 export type CardsProps = {
   visible: ProjectCardData[];
   active: Category | null;
@@ -16,7 +24,8 @@ export type CardsProps = {
 
 /**
  * Filterable project grid (SPEC §6): pills All / AI / Embedded / IoT, state in `?c=`.
- * Used on the home page (featured) and on /projects (all).
+ * Used on the home page (featured under "All", every project once a category is picked) and on
+ * /projects (all).
  *
  * Filtering animates the reflow with Motion (AnimatedCards). Motion is ~50 KB, so it is loaded
  * on the first sign the visitor wants to filter (pointer over the pills, or keyboard focus on
@@ -26,15 +35,24 @@ export type CardsProps = {
  * The static HTML renders the unfiltered grid (Suspense fallback), so every card is
  * in the exported page for crawlers and no-JS visitors; the filter applies after hydration.
  */
-export function ProjectGrid({ projects, headingLevel }: GridProps) {
+export function ProjectGrid({ projects, headingLevel, featured }: GridProps) {
   return (
-    <Suspense fallback={<GridView projects={projects} headingLevel={headingLevel} active={null} />}>
-      <FilterableGrid projects={projects} headingLevel={headingLevel} />
+    <Suspense
+      fallback={
+        <GridView
+          projects={projects}
+          headingLevel={headingLevel}
+          featured={featured}
+          active={null}
+        />
+      }
+    >
+      <FilterableGrid projects={projects} headingLevel={headingLevel} featured={featured} />
     </Suspense>
   );
 }
 
-function FilterableGrid({ projects, headingLevel }: GridProps) {
+function FilterableGrid({ projects, headingLevel, featured }: GridProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -67,6 +85,7 @@ function FilterableGrid({ projects, headingLevel }: GridProps) {
     <GridView
       projects={projects}
       headingLevel={headingLevel}
+      featured={featured}
       active={active}
       onSelect={select}
       onIntent={() => void loadMotion().catch(() => {})}
@@ -78,6 +97,7 @@ function FilterableGrid({ projects, headingLevel }: GridProps) {
 function GridView({
   projects,
   headingLevel,
+  featured,
   active,
   onSelect,
   onIntent,
@@ -88,7 +108,11 @@ function GridView({
   onIntent?: () => void;
   Cards?: ComponentType<CardsProps> | null;
 }) {
-  const visible = active ? projects.filter((p) => p.category.includes(active)) : projects;
+  const visible = active
+    ? projects.filter((p) => p.category.includes(active))
+    : featured
+      ? projects.filter((p) => featured.includes(p.slug))
+      : projects;
   const options: (Category | null)[] = [null, ...CATEGORIES];
 
   return (

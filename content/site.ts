@@ -87,6 +87,7 @@ export const site = {
         "Java",
         "Kotlin",
         "TypeScript",
+        "React",
         "Next.js",
         "Flutter",
         "PHP",
