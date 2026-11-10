@@ -7,6 +7,7 @@ import { useState } from "react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/icons";
 import { site } from "@/content/site";
 import { t } from "@/lib/i18n";
+import { visitEvent } from "@/lib/visit";
 import { play, setSound, soundEnabled } from "@/lib/sound";
 
 export type PaletteData = {
@@ -53,6 +54,7 @@ export default function CommandPalette({
   }
 
   async function copyEmail() {
+    visitEvent("contact", "email");
     try {
       await navigator.clipboard.writeText(site.email);
       setNote(t.palette.copied);
@@ -61,11 +63,18 @@ export default function CommandPalette({
     }
   }
 
+  function openProfile(name: string, href: string) {
+    visitEvent("contact", name);
+    window.open(href, "_blank", "noopener");
+  }
+
   function download(href: string) {
     const a = document.createElement("a");
     a.href = href;
     a.download = "";
     a.click();
+    // Not a link in the page, so the visit beacon cannot see it: report it.
+    visitEvent("cv", href.split("/").pop());
   }
 
   return (
@@ -129,7 +138,7 @@ export default function CommandPalette({
           </Command.Item>
           <Command.Item
             value="github code"
-            onSelect={() => run(() => window.open(site.links.github, "_blank", "noopener"))}
+            onSelect={() => run(() => openProfile("github", site.links.github))}
           >
             <GitHubIcon size={15} />
             {t.contact.github}
@@ -138,7 +147,7 @@ export default function CommandPalette({
           {site.links.linkedin && (
             <Command.Item
               value="linkedin"
-              onSelect={() => run(() => window.open(site.links.linkedin, "_blank", "noopener"))}
+              onSelect={() => run(() => openProfile("linkedin", site.links.linkedin))}
             >
               <LinkedInIcon size={15} />
               {t.contact.linkedin}

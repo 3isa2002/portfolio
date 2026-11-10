@@ -383,6 +383,29 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   Initial home JS 199.0 KB gz. Lighthouse (mobile): home 95 / 95, FAYZÈ 91, Rawdati 95,
   A11y/BP/SEO 100.
 
+### Visits portal, phase 1 — recording visits (2026-11-10)
+
+Mohamed wants a private portal that shows who visits the portfolio. The portal itself will be a
+separate project in a private repo; this phase is the recording side, in this repo.
+
+- `public/v.js`: a small beacon (2.4 KB gzip), not part of the app bundle and only fetched after
+  the page's `load` event. It posts page views (including client-side navigations), time on each
+  page (visible time only), CV downloads, contact links and outbound links. No cookies: a random
+  visitor id in localStorage, a visit id in sessionStorage. It also reads `?r=<name>` (a named
+  link for one job application) and `utm_*`.
+- `functions/api/collect.ts`: the one piece that runs on Cloudflare (a Pages Function). It adds
+  IP, country, city, network (ISP or company) and device, and writes to a D1 database bound as
+  `DB`. Write-only; same-origin posts only; 2 KB bodies; 30 new visits per IP per hour; 400 events
+  per visit. Creates its tables on first use. Without the binding it stores nothing.
+- `/?notrack=1` turns the beacon off for good on that browser (Mohamed's own devices). It is off
+  on localhost, so Lighthouse CI and local work record nothing.
+- Footer line: "visits are logged for site statistics · no ads, no third-party trackers".
+- Setup Mohamed does once in Cloudflare: create a D1 database, then Pages project → Settings →
+  Bindings → add D1 binding `DB` (Production only), and redeploy.
+- Verified with `wrangler pages dev` and a local D1: a visit from a tagged link through a project
+  page, CV, email and outbound clicks, a phone inside the LinkedIn app, opt-out, the limits, and
+  rejected posts. Home initial JS 199.0 KB gzip; Lighthouse 90–93 / 100 / 100 / 100.
+
 ## Inputs needed from Mohamed (SPEC §11)
 
 - [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)

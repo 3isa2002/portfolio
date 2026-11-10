@@ -46,3 +46,6 @@ next-env.d.ts
 # generated at build time
 /public/_img/
 /public/static/
+
+# local Cloudflare Pages dev state (wrangler pages dev)
+.wrangler

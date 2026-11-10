@@ -163,6 +163,8 @@ export const en = {
   footer: {
     builtBy: "built by",
     lastDeploy: "last deploy",
+    /** Says what the visit beacon (public/v.js) does: visits are logged, IP address included. */
+    visits: "visits are logged for site statistics · no ads, no third-party trackers",
     hint: "try",
   },
   /** Command palette (SPEC §7), opened with ⌘K / Ctrl+K or the navbar button. */

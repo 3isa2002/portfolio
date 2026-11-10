@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", ".velite/**", "next-env.d.ts"]),
+  globalIgnores([".next/**", "out/**", "build/**", ".velite/**", ".wrangler/**", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;
