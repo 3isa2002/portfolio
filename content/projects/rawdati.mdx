@@ -1,0 +1,62 @@
+---
+# From the rawdati repo's source (2026-11-10); its README is the Next.js template. The repo is
+# private and its Vercel deployment returns 404, so there is no live link and the cover is drawn.
+# TODO(mohamed): confirm your role (solo or team), whether a nursery used it, and add
+# screenshots or a live URL if you redeploy it.
+title: "Rawdati"
+slug: "rawdati"
+summary: "A nursery's daily notebook as a web app: teachers log each child's day, parents follow it, admins run the nursery"
+category: ["Web"]
+featured: false
+order: 17
+year: 2026
+status: "prototype"
+role: "Full-stack — Next.js app on Supabase"
+stack: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase", "PostgreSQL", "Zod", "Zustand", "PWA"]
+cover: "cover.webp"
+links:
+  github: ""
+  live: ""
+  video: ""
+---
+
+## Problem
+
+What a child ate, how they felt and what they learned at the nursery usually reaches the parents
+as a paper notebook or scattered chat messages, and the teacher writes it again for every child.
+
+## Approach
+
+A Next.js (App Router) app on Supabase, branded "Little Blossoms", with a portal for each role
+behind sign-in and route guards:
+
+- **Teachers** take attendance, see their class and fill a daily log for each child: breakfast,
+  lunch and snack (none, some or all), mood, behavior, toilet, and the subjects covered (Arabic,
+  English, math, science, Montessori).
+- **Parents** see the day as a timeline with a daily summary, look back through earlier days, and
+  message the teacher.
+- **Admins** manage children, teachers, classes and settings from a dashboard.
+
+<Architecture
+  nodes={[
+    { id: "teacher", label: "Teacher portal", note: "attendance · daily log", kind: "data" },
+    { id: "parent", label: "Parent portal", note: "timeline · messages", kind: "data" },
+    { id: "admin", label: "Admin portal", note: "children · classes", kind: "data" },
+    { id: "actions", label: "Server actions", note: "Zod-validated", kind: "data" },
+    { id: "sb", label: "Supabase", note: "Auth · Postgres · Realtime", kind: "data" },
+  ]}
+  edges={[
+    ["teacher", "actions"],
+    ["parent", "actions"],
+    ["admin", "actions"],
+    ["actions", "sb"],
+  ]}
+  title="Rawdati: the teacher, parent and admin portals call Next.js server actions, which validate the input and read and write Supabase (auth, Postgres and Realtime for messages)."
+/>
+
+The daily log is validated by one Zod schema, writes go through server actions, messages arrive
+live through Supabase Realtime, and the app installs as a PWA with an offline page.
+
+## Result
+
+A working prototype of the three portals with a demo seed script. It is not deployed at the moment.
