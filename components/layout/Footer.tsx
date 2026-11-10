@@ -17,10 +17,13 @@ export function Footer() {
   return (
     <footer className="border-t border-line">
       <div className="container-site flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
-        <p className="font-mono text-xs text-dim">
-          {t.footer.builtBy} {site.name} · {site.location.split(",")[0]} · {t.footer.lastDeploy}{" "}
-          <time dateTime={buildDate}>{buildDate}</time> · <PaletteHint />
-        </p>
+        <div className="flex flex-col gap-1.5">
+          <p className="font-mono text-xs text-dim">
+            {t.footer.builtBy} {site.name} · {site.location.split(",")[0]} · {t.footer.lastDeploy}{" "}
+            <time dateTime={buildDate}>{buildDate}</time> · <PaletteHint />
+          </p>
+          <p className="font-mono text-xs text-dim">{t.footer.visits}</p>
+        </div>
         <ul aria-label={t.a11y.social} className="-ms-3 flex items-center gap-1 sm:ms-0 sm:-me-3">
           {socials.map((s) => (
             <li key={s.label}>
