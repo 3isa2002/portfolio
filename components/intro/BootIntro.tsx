@@ -4,7 +4,14 @@ import { useLayoutEffect, useRef } from "react";
 import { t } from "@/lib/i18n";
 import { prefersReducedMotion } from "@/lib/motion/media";
 import { INTRO_DONE, INTRO_START } from "@/lib/motion/wake";
-import { introSoundEnd, introSoundStart, setSound, soundWaiting, unlockAudio } from "@/lib/sound";
+import {
+  audioAllowed,
+  introSoundEnd,
+  introSoundStart,
+  setSound,
+  soundWaiting,
+  unlockAudio,
+} from "@/lib/sound";
 import { chipGeometry } from "./chip-geometry";
 import { nameScramble } from "./name-canvas";
 
@@ -25,11 +32,15 @@ const VIOLET = "#8b5cf6";
  *
  * Sound: the intro has its own score (lib/audio-engine.ts). Browsers keep a page silent until the
  * visitor clicks, taps or presses a key on it (the click on a search result does not count), so
- * when sound is on but still blocked, which is every fresh page load, the intro first waits on
- * an "Enter" gate (Mohamed's decision, 2026-11-10): that click unlocks audio and the intro plays
- * from the start with its score. "Enter without sound" turns sound off (remembered, like the
- * navbar toggle) and plays it silently; Esc skips it. A visit with audio already running (a
- * client-side navigation back home) or with sound off never sees the gate.
+ * when sound is on (Mohamed's decisions, 2026-11-10):
+ * - if the browser already allows audio (`audioAllowed`: a site the visitor set to Allow, or one
+ *   the browser trusts), the intro starts at once with its score;
+ * - otherwise it opens on a boot prompt, "> press any key to boot_" ("tap to boot" on touch),
+ *   styled as its first scene: any key, click or tap unlocks audio and the intro plays from the
+ *   start with its score. "boot without sound" turns sound off (remembered, like the navbar
+ *   toggle) and plays it silently; Esc skips it.
+ * A visit with audio already running (a client-side navigation back home) or with sound off
+ * never waits.
  *
  * It plays on every visit to the home page (Mohamed's decision, 2026-11-09, replacing SPEC §4's
  * "first visit only"): on a full page load `IntroScript` turns it on before first paint; on a
@@ -129,14 +140,23 @@ export function BootIntro() {
         <canvas className="boot-name" data-boot-name />
       </div>
       <div className="boot-gate" data-boot-gate hidden>
-        <p className="label text-dim" aria-hidden>
-          <span className="text-cyan">&gt;</span> {t.intro.gateLabel}
-        </p>
-        <button type="button" className="btn btn-primary boot-enter" data-boot-enter>
-          <span aria-hidden>▶</span> {t.intro.enter}
-          <span className="boot-enter-note">{t.intro.enterNote}</span>
+        <button
+          type="button"
+          className="boot-press caret"
+          data-boot-enter
+          aria-label={t.intro.enter}
+        >
+          <span className="text-cyan" aria-hidden>
+            &gt;
+          </span>{" "}
+          <span className="boot-press-key" aria-hidden>
+            {t.intro.pressKey}
+          </span>
+          <span className="boot-press-tap" aria-hidden>
+            {t.intro.pressTap}
+          </span>
         </button>
-        <button type="button" className="boot-silent label" data-boot-silent>
+        <button type="button" className="boot-silent" data-boot-silent>
           {t.intro.enterSilent}
         </button>
       </div>
@@ -321,9 +341,9 @@ function playFull(
     gsap.to(root, { opacity: 0, duration: 0.3, ease: "power2.out", onComplete: finish });
   };
 
-  // The gate. A mouse enters on pointerdown, the moment the navbar's listener unlocks audio, so
-  // the score and the timeline start together; keys and taps enter on click (a tap unlocks
-  // audio only once it ends).
+  // The boot prompt. A mouse enters on pointerdown, the moment the navbar's listener unlocks
+  // audio, so the score and the timeline start together; taps enter on click (a tap unlocks
+  // audio only once it ends); keys on keydown.
   let gateOpen = false;
   const onGate = (e: Event) => {
     if (!gateOpen) return;
@@ -334,8 +354,9 @@ function playFull(
     closeGate();
     if (silent) setSound(false);
     else unlockAudio();
+    delete root?.dataset.gate;
     if (gate)
-      gsap.to(gate, { autoAlpha: 0, duration: 0.2, onComplete: () => void (gate.hidden = true) });
+      gsap.to(gate, { autoAlpha: 0, duration: 0.15, onComplete: () => void (gate.hidden = true) });
     tl.play(0);
     // The press that entered must not also skip: listen from the next frame.
     requestAnimationFrame(() => {
@@ -345,14 +366,14 @@ function playFull(
   const onGateKey = (e: KeyboardEvent) => {
     if (!gateOpen) return;
     if (e.key === "Escape") return skipNow();
-    // Enter / Space anywhere enters with sound; on "without sound" its own click handles it.
-    if (
-      (e.key === "Enter" || e.key === " ") &&
-      !(e.target as Element | null)?.closest?.("[data-boot-silent]")
-    ) {
-      e.preventDefault();
-      onGate(e);
-    }
+    // "Press any key": everything but Tab (moves focus), bare modifiers and browser shortcuts.
+    // Enter / Space on "boot without sound" are left to its own click.
+    if (e.key === "Tab" || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (["Shift", "Control", "Alt", "Meta", "CapsLock"].includes(e.key)) return;
+    const onSilent = (e.target as Element | null)?.closest?.("[data-boot-silent]");
+    if (onSilent && (e.key === "Enter" || e.key === " ")) return;
+    e.preventDefault();
+    onGate(e);
   };
   function closeGate() {
     if (!gateOpen) return;
@@ -361,16 +382,26 @@ function playFull(
     root?.removeEventListener("click", onGate);
     window.removeEventListener("keydown", onGateKey);
   }
-  if (gated) {
+  function openGate() {
+    if (!gate || !root) return;
     gateOpen = true;
+    root.dataset.gate = ""; // hides the log's own caret: the prompt has one
     gate.hidden = false;
     // Opacity only (not autoAlpha): a visibility:hidden button cannot take focus.
-    gsap.fromTo(gate, { opacity: 0 }, { opacity: 1, duration: 0.35, delay: 0.15 });
+    gsap.fromTo(gate, { opacity: 0 }, { opacity: 1, duration: 0.3 });
     q("[data-boot-enter]")[0]?.focus({ preventScroll: true });
     root.addEventListener("pointerdown", onGate);
     root.addEventListener("click", onGate);
     window.addEventListener("keydown", onGateKey);
   }
+  // Sound is on but not yet playing: start at once if the browser allows audio, else prompt.
+  if (gated)
+    void audioAllowed().then((allowed) => {
+      if (finished || stopped) return;
+      if (!allowed) return openGate();
+      tl.play(0);
+      armSkip();
+    });
 
   // Skip (once the intro runs): any click, wheel, touch or key jumps to the final state in 300 ms.
   // Only things the visitor does: a `scroll` event also fires when the browser restores the
@@ -385,7 +416,9 @@ function playFull(
   }
   if (!gated) armSkip();
 
+  let stopped = false;
   return () => {
+    stopped = true;
     removeSkip();
     closeGate();
     tl.kill();

@@ -324,6 +324,24 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
 - Verified in headful Chrome with the real autoplay policy: gate, mouse/keyboard/silent/Esc paths,
   no gate on returning home, background still `full` after 20 s; Lighthouse home 92 / 92.
 
+### Intro boot prompt + quieter ambience (2026-11-10)
+
+- Mohamed wanted the site to open straight into the intro with sound. Browsers forbid audio
+  before a gesture on a first visit, so:
+  - Desktop: the intro first asks the browser whether audio is already allowed (a site the
+    visitor set to Allow, or one the browser trusts). If so, it starts at once with its score.
+  - Otherwise (and always on phones, where the check would cost ~260 ms of main thread and audio
+    is never pre-allowed) the intro opens on a terminal prompt as its first scene:
+    "> press any key to boot_" ("tap to boot" on touch), with "boot without sound" and Esc.
+    The Enter screen is gone.
+- Background ambience at 0.45 of its former level ("just a sound from the background").
+- Lighthouse CI now runs Chrome with `--autoplay-policy=document-user-activation-required`, the
+  policy real Chrome uses on a first visit. Headless Chrome allows audio by default, which would
+  measure a page no first-time visitor gets.
+- Verified (headful Chrome): prompt shown and focused; click, any key, "without sound" and Esc
+  paths; no prompt when the browser allows audio; no prompt when coming back home. Lighthouse
+  main vs this branch, interleaved on the same (busy) machine: 81 / 80 vs 88.
+
 ## Inputs needed from Mohamed (SPEC §11)
 
 - [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)

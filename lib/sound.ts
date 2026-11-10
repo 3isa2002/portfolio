@@ -42,6 +42,51 @@ export function soundWaiting(): boolean {
   return soundEnabled() && ctx?.state !== "running";
 }
 
+/**
+ * Whether the browser lets the page play audio right now, without a click: a site the visitor
+ * allowed (site settings → Sound / Autoplay: Allow) or one the browser already trusts. Creates the
+ * AudioContext to find out (Firefox answers through `getAutoplayPolicy` without one). Resolves
+ * within ~150 ms; when it resolves true the greeting / intro score has started.
+ *
+ * Touch-first devices are not probed: creating an AudioContext costs ~260 ms of main thread on a
+ * mid-range phone, and phones almost never allow audio before a tap, so they go straight to the
+ * "tap to boot" prompt.
+ */
+export function audioAllowed(): Promise<boolean> {
+  if (!soundEnabled()) return Promise.resolve(false);
+  const nav = navigator as Navigator & { getAutoplayPolicy?: (type: string) => string };
+  try {
+    const policy = nav.getAutoplayPolicy?.("audiocontext");
+    if (policy === "disallowed") return Promise.resolve(false);
+    if (policy === "allowed") audio();
+  } catch {
+    // Older browsers throw on the argument: find out by creating the context.
+  }
+  if (!ctx && isPhone()) return Promise.resolve(false);
+  const ac = audio();
+  if (!ac) return Promise.resolve(false);
+  if (ac.state === "running") return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const done = () => {
+      window.clearTimeout(timer);
+      ac.removeEventListener("statechange", onChange);
+      resolve(ac.state === "running");
+    };
+    const onChange = () => {
+      if (ac.state === "running") done();
+    };
+    const timer = window.setTimeout(done, 150);
+    ac.addEventListener("statechange", onChange);
+  });
+}
+
+/** A phone or tablet: a mobile user agent, or no mouse-like primary pointer. */
+function isPhone(): boolean {
+  const nav = navigator as Navigator & { userAgentData?: { mobile?: boolean } };
+  if (nav.userAgentData?.mobile || /Mobi|Android|iPhone|iPad/i.test(nav.userAgent)) return true;
+  return !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
+
 /** True for a moment after audio became available: that click was the unlock, not a toggle. */
 export function justUnlocked(): boolean {
   return performance.now() - unlockedAt < 700;

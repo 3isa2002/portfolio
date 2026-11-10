@@ -209,7 +209,7 @@ html[data-intro="full"] .boot:not([data-running]) {
   opacity: 0;
   visibility: hidden;
 }
-/* The "Enter" gate: shown while sound is on but the browser has not allowed audio yet. */
+/* The boot prompt: shown while sound is on but the browser has not allowed audio yet. */
 .boot-gate {
   position: absolute;
   inset: 0;
@@ -217,29 +217,51 @@ html[data-intro="full"] .boot:not([data-running]) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   cursor: pointer;
   opacity: 0;
 }
 .boot-gate[hidden] {
   display: none;
 }
-.boot-enter {
-  gap: 0.6rem;
-  padding-inline: 2rem;
-  box-shadow: 0 0 32px color-mix(in oklab, var(--cyan) 35%, transparent);
+.boot[data-gate] [data-boot-caret] {
+  visibility: hidden;
 }
-.boot-enter-note {
+.boot-press {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.7;
+  font-size: clamp(1rem, 2.2vw, 1.375rem);
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-shadow: 0 0 18px color-mix(in oklab, var(--cyan) 45%, transparent);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+}
+/* Focus shows as an underline, not a box: the prompt should read as a terminal line. */
+.boot-press:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--cyan);
+  text-underline-offset: 8px;
+}
+.boot-press-tap {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .boot-press-key {
+    display: none;
+  }
+  .boot-press-tap {
+    display: inline;
+  }
 }
 .boot-silent {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   color: var(--text-dim);
   text-decoration: underline;
   text-underline-offset: 4px;
+  padding: 0.25rem 0.5rem;
 }
 .boot-silent:hover,
 .boot-silent:focus-visible {
