@@ -91,6 +91,7 @@ export const site = {
         "Next.js",
         "Flutter",
         "PHP",
+        "Shopify",
         "Supabase",
         "PostgreSQL",
         "MySQL",

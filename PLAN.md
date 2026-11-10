@@ -366,6 +366,23 @@ CLS < 0.05 · initial home JS < 200 KB gzipped before the 3D chunk · 3D loaded 
   Lighthouse (mobile): home 83 / 93 / 95 (one noisy run), /projects 91, new pages 93–95,
   A11y/BP/SEO 100, CLS ≤ 0.03.
 
+### FAYZÈ + confirmed roles (2026-11-10)
+
+- FAYZÈ added (Mohamed gave the store URL and confirmed he built all of it): a Shopify store for
+  an Egyptian clothing brand. Facts from the repo's `shopify-theme` branch (Horizon base, 10 custom
+  sections, 17 snippets, 56 commits, GitHub integration) and the live store; cover and gallery are
+  screenshots of fayze-eg.com.
+- Printora: role is now "Solo" (Mohamed: "I worked on all of it").
+- Rawdati rewritten from a deeper read of the source and Mohamed's description: a product meant
+  to be sold to nurseries that replaces each child's paper notebook; check-in and check-out, nap,
+  parent accounts created with the child. Category is now Web + Mobile (mobile-first PWA). Its
+  role still has a `TODO(mohamed)`.
+- 18 projects in total; FAYZÈ sits after Guesstrap (order 9). Skills: added Shopify.
+- Verified (desktop and phone): home filter counts (AI 4, Embedded 2, IoT 2, Web 10, Mobile 5,
+  All 6); the FAYZÈ, Printora and Rawdati pages render with no console errors or broken images.
+  Initial home JS 199.0 KB gz. Lighthouse (mobile): home 95 / 95, FAYZÈ 91, Rawdati 95,
+  A11y/BP/SEO 100.
+
 ### Visits portal, phase 1 — recording visits (2026-11-10)
 
 Mohamed wants a private portal that shows who visits the portfolio. The portal itself will be a
