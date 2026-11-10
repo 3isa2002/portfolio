@@ -39,7 +39,7 @@ export const timeline: Milestone[] = [
   {
     year: "2026",
     title: "Wanas & production work",
-    text: "An ESP32-S3 voice desk assistant, and a client platform shipped to production.",
+    text: "An ESP32-S3 companion robot that talks Egyptian Arabic through Gemini, and a client platform shipped to production.",
     side: "ai",
   },
 ];

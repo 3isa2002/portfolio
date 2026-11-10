@@ -1,75 +1,129 @@
 ---
-# From the IoT CV (hardware) and the robot-desktop repo (backend), 2026-11-09.
-# The public backend uses keyword rules, not an LLM; the CV mentions Gemini, but no Gemini code is
-# public. TODO(mohamed): if the ESP32 firmware calls Gemini, publish it and add it here.
+# From the wanas repo README, config and firmware (2026-11-10). The repo is private for now:
+# TODO(mohamed): make it public, then set links.github to https://github.com/3isa2002/wanas.
+# The concept render in the gallery was generated with Gemini (it says so in its caption).
 title: "Wanas"
 slug: "wanas"
-summary: "An Arabic-speaking ESP32-S3 desk robot with a FastAPI brain: it listens, answers and talks back in Egyptian Arabic"
+summary: "An Egyptian Arabic companion robot: talk to it freely and it answers through Gemini in a human voice, with a living face"
 category: ["AI", "Embedded", "IoT"]
 featured: true
 order: 1
 year: 2026
 status: "prototype"
-role: "Solo — hardware, firmware and backend"
-stack: ["C/C++", "ESP32-S3", "Python", "FastAPI", "SPI", "I2S", "Wi-Fi", "edge-tts"]
+role: "Solo — hardware, firmware, backend, dashboard and enclosure"
+stack:
+  [
+    "ESP32-S3",
+    "Gemini API",
+    "C/C++",
+    "Python",
+    "FastAPI",
+    "FreeRTOS",
+    "WebSockets",
+    "Fish Audio",
+    "SQLite",
+    "React",
+    "Docker",
+    "OpenSCAD",
+    "I2S",
+    "SPI",
+    "Wi-Fi",
+  ]
 cover: "cover.webp"
+gallery:
+  - {
+      src: "faces.webp",
+      caption: "Face expressions for the round GC9A01 screen: neutral, talking, surprised, sad, thinking",
+    }
+  - {
+      src: "enclosure.webp",
+      caption: "The 3-part printable enclosure (head, body, base), modelled parametrically in OpenSCAD",
+    }
+  - {
+      src: "wiring.webp",
+      caption: "Part of the full wiring map (v1.1): every pin, capacitor and power rail",
+    }
+  - {
+      src: "concept.webp",
+      caption: "Design concept: an AI-generated render (Gemini) of the look the enclosure is heading towards",
+    }
 links:
-  github: "https://github.com/3isa2002/robot-desktop"
+  github: ""
   live: ""
   video: ""
 metrics:
-  - { label: "Peripherals", value: "4" }
-  - { label: "I2S ports", value: "2" }
-  - { label: "API endpoints", value: "3" }
+  - { label: "Reply starts", value: "~2 s" }
+  - { label: "Face", value: "30 fps" }
+  - { label: "FreeRTOS tasks", value: "5" }
+  - { label: "End of speech", value: "0.7 s" }
 ---
 
 ## Problem
 
-I wanted a desk companion that actually talks back in Egyptian Arabic instead of the usual English
-assistant voices: something with a face on a small screen, a microphone and a speaker, that answers
-when spoken to.
+Voice assistants speak formal Arabic at best, and they are a speaker, not a companion. I wanted a
+small robot on the desk that you talk to in Egyptian Arabic, freely and without pressing a button,
+that answers in a real human-sounding voice with feeling, with a face that moves as it talks, and
+that remembers you.
 
 ## Approach
 
-The robot is an ESP32-S3 with four peripherals: a GC9A01 round display on SPI, an INMP441 MEMS
-microphone and a MAX98357A Class-D amplifier on two separate I2S ports, and a TTP223 touch sensor.
-I calculated the 3.3 V / 5 V power budget, added capacitors to stop Wi-Fi brownout resets, and
-documented the wiring map.
-
-Its "brain" is a FastAPI backend on the local network. It takes a typed message or a recorded voice
-clip, transcribes speech with the Google Web Speech API, picks a reply, and answers with the text,
-a synthesized Egyptian Arabic voice (edge-tts, cached on disk so repeated replies are instant) and
-an animation state for the robot's face.
+Wanas is three parts: an ESP32-S3 robot, a FastAPI "brain" in the cloud, and a React admin
+dashboard.
 
 <Architecture
   nodes={[
-    { id: "mic", label: "INMP441 mic", note: "I2S", kind: "hw" },
-    { id: "esp", label: "ESP32-S3", note: "C/C++ firmware", kind: "hw" },
-    { id: "api", label: "FastAPI backend", note: "/chat · /chat/audio", kind: "data" },
-    { id: "stt", label: "Speech-to-text", note: "Google Web Speech", kind: "ai" },
-    { id: "brain", label: "Intent engine", note: "keyword rules", kind: "ai" },
-    { id: "tts", label: "Arabic voice", note: "edge-tts, cached", kind: "ai" },
-    { id: "display", label: "GC9A01 display", note: "face animation", kind: "hw" },
+    { id: "in", label: "ESP32-S3 + mic", note: "VAD, streams your voice", kind: "hw" },
+    { id: "brain", label: "FastAPI brain", note: "WSS · memory · SQLite", kind: "data" },
+    { id: "gemini", label: "Gemini Flash-Lite", note: "hears + replies, 1 call", kind: "ai" },
+    { id: "search", label: "Gemini + Search", note: "live questions", kind: "ai" },
+    { id: "tts", label: "Fish Audio", note: "Egyptian voice, streamed", kind: "ai" },
+    { id: "out", label: "ESP32-S3 out", note: "plays + lip-sync", kind: "hw" },
+    { id: "face", label: "GC9A01 face", note: "30 fps", kind: "hw" },
     { id: "amp", label: "MAX98357A amp", note: "I2S → speaker", kind: "hw" },
   ]}
   edges={[
-    ["mic", "esp"],
-    ["esp", "api"],
-    ["api", "stt"],
-    ["stt", "brain"],
+    ["in", "brain"],
+    ["brain", "gemini"],
+    ["brain", "search"],
     ["brain", "tts"],
-    ["brain", "display"],
-    ["tts", "amp"],
+    ["tts", "out"],
+    ["out", "face"],
+    ["out", "amp"],
   ]}
-  title="Wanas: the ESP32-S3 sends speech to a FastAPI backend, which transcribes it, picks a reply and returns an Arabic voice clip for the speaker plus a face animation for the display."
+  title="Wanas: the robot streams your voice over one encrypted WebSocket to the FastAPI brain, which asks Gemini (or Gemini with Google Search for live questions) with your memories; the reply is voiced by Fish Audio and streamed back to the robot, which plays it while the face lip-syncs."
 />
 
-The intent engine handles greetings, jokes, the time, questions about who Wanas is, and live
-prayer times for your location. A small browser page tests the whole flow from a laptop when the
-hardware isn't on the desk.
+- **Conversation without a button.** Touch it once and talk. The robot learns the room's noise
+  level, detects when you start and when you stop (0.7 s of quiet), and listens again after it
+  answers. Your voice streams to the server while you are still speaking.
+- **One call to hear and answer.** The server sends the audio together with your memories to
+  Gemini Flash-Lite, which transcribes, replies in Egyptian Arabic and picks the emotion and face
+  in a single request. Live questions (weather, news, matches) go to a second Gemini model with
+  Google Search.
+- **A human voice with feeling.** Gemini writes voice cues into its reply (laughing, a sigh, a
+  softer voice); Fish Audio performs them in a trained Egyptian voice and streams the audio back,
+  so the reply starts about 2 seconds after you stop talking. edge-tts takes over if Fish Audio is
+  down.
+- **A living face.** Eyes and mouth animate at 30 fps on a round 240×240 screen; the mouth follows
+  the loudness of the outgoing audio, and the expression changes at the moment the emotion lands
+  in the speech.
+- **Firmware that never blocks.** Five FreeRTOS tasks split over both cores (face, app, audio in,
+  audio out, network) and talk only through queues, a ring buffer and atomics, so the face never
+  waits on the network.
+- **Memory and safety.** It remembers facts about you and reminders in SQLite. Every robot has its
+  own key, Wi-Fi and secrets are entered on a setup page and stored on the device (none in the
+  code), the link is encrypted (WSS with certificate checks) and usage is rate-limited.
+
+The hardware: an ESP32-S3 (16 MB flash, 8 MB PSRAM), a GC9A01 round display on SPI, an INMP441
+microphone and a MAX98357A amplifier on I2S, a TTP223 touch sensor, and a LiPo battery with a
+TP4056 charger, all documented in a full wiring map and bill of materials. The enclosure is a
+parametric three-part OpenSCAD model, exported to STL and checked for printing.
 
 ## Result
 
-A working desk robot that answers in Egyptian Arabic with its own voice and face. The intent engine
-is deliberately simple, keyword rules rather than a language model, so it covers the set of things
-Wanas is meant to say and nothing beyond it.
+A working pilot on a breadboard: the server, firmware v2 and the admin dashboard (users, chat
+history, usage) run end to end, and the enclosure is ready to print. Next: a "يا وَنَس" wake word
+instead of the touch, reminders spoken at their time, cloud deployment (Docker + Caddy on Google
+Cloud) and battery power inside the enclosure.
+
+<Gallery />
