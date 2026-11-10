@@ -1,0 +1,86 @@
+---
+# From the fayze repo (branch shopify-theme: theme files and commit history) and the live store
+# (2026-11-10). Mohamed: "a Shopify store I built for an Egyptian local clothing brand; I did all
+# of it." The repo is private, so there is no GitHub link.
+title: "FAYZÈ"
+slug: "fayze"
+summary: "A Shopify store for FAYZÈ, an Egyptian clothing brand: a custom theme with its own sections, product page and cart"
+category: ["Web"]
+featured: false
+order: 9
+year: 2026
+status: "shipped"
+role: "Solo — theme development, storefront design and store setup"
+stack: ["Shopify", "Liquid", "JavaScript", "CSS", "GitHub"]
+cover: "cover.webp"
+gallery:
+  - {
+      src: "collection.webp",
+      caption: "The collection page in the brand's editorial style, with filter pills by garment type",
+    }
+  - {
+      src: "product.webp",
+      caption: "Product page: color swatches, sizes, a fit and coverage scale, and the details as accordions",
+    }
+  - {
+      src: "product-phone.webp",
+      caption: "The same product page on a phone, with the WhatsApp button",
+    }
+links:
+  github: ""
+  live: "https://fayze-eg.com"
+  video: ""
+metrics:
+  - { label: "Custom sections", value: "10" }
+  - { label: "Custom snippets", value: "17" }
+  - { label: "Theme commits", value: "56" }
+---
+
+## Problem
+
+FAYZÈ is a local Egyptian clothing brand launching its first collection online. A stock Shopify
+theme would sell the clothes but would not look like the brand, and the people running the store
+needed to keep changing banners, prices and products themselves without breaking the design.
+
+## Approach
+
+The store runs on Shopify. I took Shopify's Horizon theme as the base and built the FAYZÈ layer on
+top of it in Liquid, CSS and JavaScript: 10 sections and 17 snippets of its own.
+
+<Architecture
+  nodes={[
+    { id: "repo", label: "GitHub repo", note: "theme source", kind: "data" },
+    { id: "editor", label: "Shopify editor", note: "store team", kind: "data" },
+    { id: "theme", label: "Live theme", note: "Horizon + FAYZÈ layer", kind: "data" },
+    { id: "store", label: "Storefront", note: "fayze-eg.com", kind: "data" },
+  ]}
+  edges={[
+    ["repo", "theme"],
+    ["editor", "theme"],
+    ["theme", "store"],
+  ]}
+  title="FAYZÈ: the theme lives in a GitHub repo connected to Shopify, so a commit publishes to the live theme; the store team edits content in Shopify's editor; the live theme renders the storefront."
+/>
+
+- **Home page.** A hero that takes a video or an image, with a separate image for phones so a sale
+  banner stays readable, and the current collection rising into it so the products show on the
+  first screen.
+- **Collection page.** Redesigned in the brand's editorial style, with filter pills by garment type
+  and sale prices next to the struck-through old price. Product badges are set from product tags.
+- **Product page.** The gallery shows only the photos of the selected color, a fit and coverage
+  scale says how the piece sits, and details, fabric and care, and delivery open as accordions.
+- **Cart drawer.** A progress bar towards free shipping, suggested pieces and a clear checkout
+  button, with cash on delivery marked.
+- **Trust and contact.** Terms, privacy, shipping and returns open as panels from the menu without
+  leaving the page, there is one delivery estimate everywhere, and a WhatsApp button on phones.
+- **A theme the team can edit.** The repo is connected through Shopify's GitHub integration: a
+  commit publishes to the live theme, and what the store team changes in Shopify's editor comes
+  back as commits, so code and content never overwrite each other.
+
+## Result
+
+Live at fayze-eg.com with the Autumn 2026 collection: four products in several colors and sizes,
+priced in EGP. The theme went from its first commit on 1 October 2026 through 56 commits,
+including a Black Friday campaign, while the store team kept editing content from Shopify's editor.
+
+<Gallery />
