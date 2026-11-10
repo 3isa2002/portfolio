@@ -190,10 +190,11 @@ export const en = {
     ],
     ok: "OK",
     skip: "Skip intro",
-    gateLabel: "system ready",
-    enter: "Enter",
-    enterNote: "sound on",
-    enterSilent: "Enter without sound",
+    /** Accessible name of the boot prompt (its visible text is pressKey / pressTap). */
+    enter: "Start the intro with sound",
+    pressKey: "press any key to boot",
+    pressTap: "tap to boot",
+    enterSilent: "boot without sound",
   },
   notFound: {
     title: "Signal lost",

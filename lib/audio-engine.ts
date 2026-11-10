@@ -17,6 +17,8 @@ let lastTick = 0;
 let ambient: { stop: () => void } | null = null;
 
 const MASTER = 0.9;
+/** Ambience level under the master: a background presence, well under the UI sounds. */
+const AMBIENT = 0.45;
 /** A minor pentatonic, the site's palette of notes. */
 const PENTA = [440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
 
@@ -230,7 +232,7 @@ export function startAmbient() {
 
   const bus = ctx.createGain();
   bus.gain.setValueAtTime(0.0001, t);
-  bus.gain.exponentialRampToValueAtTime(1, t + 4);
+  bus.gain.exponentialRampToValueAtTime(AMBIENT, t + 4);
   bus.connect(master);
 
   // Pad: A2 + E3, each two slightly detuned saws, through a low-pass that breathes slowly.
