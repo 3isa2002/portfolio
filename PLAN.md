@@ -406,6 +406,23 @@ separate project in a private repo; this phase is the recording side, in this re
   page, CV, email and outbound clicks, a phone inside the LinkedIn app, opt-out, the limits, and
   rejected posts. Home initial JS 199.0 KB gzip; Lighthouse 90–93 / 100 / 100 / 100.
 
+### Shadia Travel in detail (2026-11-11)
+
+- Rewritten from the private ShadiaApp repo (READMEs, docs, admin portal source, migrations) and
+  the live website and app. It now explains the three parts separately: the Flutter app, the
+  customer website and the staff portal (trips, bookings, tour companies and edit requests,
+  loyalty and partner redemption, 27 staff permissions, the analytics area and its AI analyst),
+  plus the shared Supabase backend.
+- Corrected a claim: online payment through Paymob is built and tested but switched off until the
+  gateway contract is active; bookings are paid in cash or by InstaPay and confirmed by staff.
+- Real screenshots replace the illustrated cover: the website home (cover), a trip page and the
+  trip list, and three screens of the app (guest view of its web build). Live link: the website;
+  the app is linked in the text. The admin portal is not linked (Mohamed's decision) and has no
+  screenshots yet because it is behind sign-in.
+- Verified (desktop and phone): the page renders with no console errors or broken images; no link
+  to the admin portal in the built HTML. Initial home JS 199.0 KB gz. Lighthouse (mobile, busy
+  machine): home 95 / 84 / 87, Shadia page 94 / 68 / 88 / 94; A11y/BP/SEO 100. No code changed.
+
 ## Inputs needed from Mohamed (SPEC §11)
 
 - [x] 3-sentence bio + 4–6 timeline milestones (from the CVs)
