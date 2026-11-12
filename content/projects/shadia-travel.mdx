@@ -1,9 +1,13 @@
 ---
-# From the CVs (2026-11-09). TODO(mohamed): add the live URL (links.live) and screenshots (gallery)
-# if the client agrees to show them.
+# From the ShadiaApp repo (READMEs, docs/, admin-portal source, migrations) and the live website
+# and app (2026-11-11). The repo is private. Mohamed: link the website and the app, show the
+# admin portal in screenshots only, never link it.
+# Admin portal screenshots (2026-11-12) come from Mohamed's own signed-in session. Only screens
+# without personal data are used: no customers, bookings, staff or partner contacts. An internal
+# configuration warning banner was cut out of the two dashboard screens.
 title: "Shadia Travel"
 slug: "shadia-travel"
-summary: "A tourism booking platform — mobile app, admin dashboard and web portal — delivered to production"
+summary: "A trip-booking platform for Egypt: a Flutter app, a customer website and a staff portal on one Supabase backend"
 category: ["Web", "Mobile"]
 featured: true
 order: 4
@@ -15,52 +19,149 @@ stack:
     "Flutter",
     "Riverpod",
     "Next.js",
+    "React",
     "TypeScript",
     "Tailwind CSS",
     "Supabase",
     "PostgreSQL",
     "Paymob",
+    "Claude API",
+    "Recharts",
     "Vercel",
   ]
 cover: "cover.webp"
+gallery:
+  - {
+      src: "app.webp",
+      caption: "The Flutter app: home with search and categories, a trip with its day-by-day program and departure dates, and the loyalty program",
+    }
+  - {
+      src: "web-trip.webp",
+      caption: "A trip on the website: departure date, pickup point, seat on the bus and the total, the same steps as the app",
+    }
+  - {
+      src: "web-trips.webp",
+      caption: "Browsing trips on the website: search, sorting and filters by goal, category and type",
+    }
+  - {
+      src: "admin-trips.webp",
+      caption: "Staff portal: the trip catalog, with each trip's tour company, bus, next departure, price and occupancy",
+    }
+  - {
+      src: "admin-trip.webp",
+      caption: "Staff portal: one trip, with its departure dates, photo gallery and pickup points",
+    }
+  - {
+      src: "admin-screen-flow.webp",
+      caption: "Analytics: screen flow in the app, with visits, time on each screen and exit rate",
+    }
+  - {
+      src: "admin-demand.webp",
+      caption: "Analytics: demand and opportunities, with views against bookings by price band and by destination",
+    }
 links:
   github: ""
-  live: ""
+  live: "https://www.shadia.app"
   video: ""
 metrics:
-  - { label: "Apps, one monorepo", value: "3" }
+  - { label: "Apps, one backend", value: "3" }
+  - { label: "Staff permissions", value: "27" }
+  - { label: "Analytics reports", value: "16" }
+  - { label: "Languages", value: "3" }
 ---
 
 ## Problem
 
-A tourism client needed customers to browse and book trips and pay online, and staff to manage it
-all, on mobile and on the web.
+Shadia sells organized trips inside Egypt, run by tour companies, by the seat on a bus. Customers
+needed to find a trip, pick a departure date, a pickup point and a seat, and follow their booking
+from a phone or a browser. The team needed one place to run all of it: trips and their dates,
+bookings and payments, the tour companies, a loyalty program with partner shops, support, and
+numbers that show what is selling.
 
 ## Approach
 
-I gathered the requirements with the client and owned the product end to end: a Flutter mobile
-client, an admin dashboard and a public web portal in one monorepo, with booking and online payment
-flows (Paymob) on a Supabase/PostgreSQL backend secured with row-level security, deployed on Vercel.
+I gathered the requirements with the client and built the platform end to end as one monorepo:
+three applications on a single Supabase backend. Every price, seat and booking rule lives in the
+database, so the app and the website can never disagree.
 
 <Architecture
   nodes={[
-    { id: "app", label: "Mobile app", note: "Flutter + Riverpod", kind: "data" },
-    { id: "web", label: "Web portal", note: "Next.js", kind: "data" },
-    { id: "admin", label: "Admin dashboard", note: "Next.js", kind: "data" },
-    { id: "db", label: "Supabase", note: "PostgreSQL + RLS", kind: "data" },
-    { id: "pay", label: "Paymob", note: "online payments", kind: "data" },
+    { id: "app", label: "Mobile app", note: "Flutter · Riverpod", kind: "data" },
+    { id: "web", label: "Customer website", note: "Next.js · server-rendered", kind: "data" },
+    { id: "admin", label: "Staff portal", note: "Next.js · 27 permissions", kind: "data" },
+    { id: "db", label: "Supabase", note: "Postgres · RLS · functions", kind: "data" },
+    { id: "pay", label: "Paymob", note: "signed webhook", kind: "data" },
+    { id: "ai", label: "Claude API", note: "AI analyst", kind: "ai" },
   ]}
   edges={[
     ["app", "db"],
     ["web", "db"],
     ["admin", "db"],
-    ["app", "pay"],
     ["web", "pay"],
+    ["admin", "ai"],
   ]}
-  title="Shadia Travel: the mobile app, web portal and admin dashboard share a Supabase PostgreSQL backend with row-level security; bookings are paid through Paymob."
+  title="Shadia Travel: the Flutter app, the customer website and the staff portal share one Supabase backend (Postgres with row-level security and database functions); the website talks to Paymob for online payment, and the staff portal sends aggregated numbers to the Claude API for its AI analyst."
 />
+
+### The mobile app
+
+A Flutter app (Riverpod, go_router) in Arabic, English and Franco (Arabic in Latin letters), also published as a web
+build at [mobile.shadia.app](https://mobile.shadia.app). It replaced an earlier React Native
+version.
+
+- Browse and search trips with filters, open a trip with its photos, day-by-day program, departure
+  dates and pickup points, choose seats on the bus map and book.
+- Sign-in by phone number with an SMS code, sent through a Supabase hook to an Egyptian SMS
+  provider.
+- Bookings with QR tickets, a wallet, a loyalty program whose points turn into vouchers at partner
+  cafés and restaurants, and support tickets.
+
+### The customer website
+
+[shadia.app](https://www.shadia.app) is a Next.js site that follows the app screen by screen: the
+same steps, texts, rules and booking statuses, checked against a written parity checklist. Its
+translations are generated from the app's own dictionary.
+
+- It books through the same database functions as the app, so a seat is held for one customer
+  only and the total is always computed on the server, never in the browser.
+- Online payment through Paymob is built in: the server creates the payment from the booking's own
+  amount, the card is entered on Paymob's page, and a payment counts only when Paymob's signed
+  webhook confirms it. It sits behind a switch until the gateway contract is active; until then
+  bookings are paid in cash or by InstaPay and confirmed by staff.
+- Booking emails with an Arabic PDF ticket, server-rendered pages for speed and search engines,
+  and a content security policy.
+
+### The staff portal
+
+The admin portal is where the business runs. It is a Next.js dashboard, and what a person sees in
+it depends on their role:
+
+- **Trips.** Create and edit trips in three languages with a photo gallery, pickup points, bus
+  types with their seat maps, and recurring departure dates, each with its own price and seats.
+- **Bookings.** Confirm, reject or cancel bookings, record payments, and see who sits where.
+- **Tour companies.** Each company's staff sign in to see only their own trips. Their changes
+  arrive as edit requests that an admin reviews as a diff and approves or rejects.
+- **Loyalty and partners.** Sponsors, vouchers and a points ledger. A partner's cashier signs in
+  to a separate redeem screen and scans the customer's QR voucher.
+- **Customers and support.** Customer accounts and wallets, and support tickets with replies.
+- **Staff and permissions.** 27 permissions in 8 groups (trips, bookings, companies, partners,
+  staff, support, customers, analytics), with the sensitive ones marked, assigned per employee.
+- **Analytics.** A separate analytics area with 16 reports: live activity, screen flow, search
+  log, demand, the booking funnel, trip performance, revenue, customer segments, retention and
+  campaign audiences, with CSV export. An AI analyst sends the aggregated numbers (no names or
+  phone numbers) to Claude and gets back a performance report and a plan for the week, in Arabic.
+
+### The backend
+
+Supabase Postgres with row-level security. The schema is more than 60 migrations; the ones that guard
+bookings, access and account deletion have tests that run on an in-memory Postgres. CI runs the
+website's lint, type checks, unit tests and build, the portal's build and the migration tests on
+every pull request, and Vercel deploys the main branch.
 
 ## Result
 
-The platform is in production for the client: bookings and online payments run end to end, and
-customer data is protected by row-level security in the database.
+The website, the app's web build and the staff portal are live for the client on shadia.app, with
+50 trips on sale. The repo holds 460 commits since July 2026, including a full rebuild of the
+website onto the app's booking rules and a security pass over the shared backend.
+
+<Gallery />
