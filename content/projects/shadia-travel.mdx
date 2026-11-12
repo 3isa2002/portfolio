@@ -2,7 +2,9 @@
 # From the ShadiaApp repo (READMEs, docs/, admin-portal source, migrations) and the live website
 # and app (2026-11-11). The repo is private. Mohamed: link the website and the app, show the
 # admin portal in screenshots only, never link it.
-# TODO(mohamed): admin portal screenshots (it is behind sign-in, so none are in the gallery yet).
+# Admin portal screenshots (2026-11-12) come from Mohamed's own signed-in session. Only screens
+# without personal data are used: no customers, bookings, staff or partner contacts. An internal
+# configuration warning banner was cut out of the two dashboard screens.
 title: "Shadia Travel"
 slug: "shadia-travel"
 summary: "A trip-booking platform for Egypt: a Flutter app, a customer website and a staff portal on one Supabase backend"
@@ -40,6 +42,22 @@ gallery:
   - {
       src: "web-trips.webp",
       caption: "Browsing trips on the website: search, sorting and filters by goal, category and type",
+    }
+  - {
+      src: "admin-trips.webp",
+      caption: "Staff portal: the trip catalog, with each trip's tour company, bus, next departure, price and occupancy",
+    }
+  - {
+      src: "admin-trip.webp",
+      caption: "Staff portal: one trip, with its departure dates, photo gallery and pickup points",
+    }
+  - {
+      src: "admin-screen-flow.webp",
+      caption: "Analytics: screen flow in the app, with visits, time on each screen and exit rate",
+    }
+  - {
+      src: "admin-demand.webp",
+      caption: "Analytics: demand and opportunities, with views against bookings by price band and by destination",
     }
 links:
   github: ""

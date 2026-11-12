@@ -417,8 +417,12 @@ separate project in a private repo; this phase is the recording side, in this re
   gateway contract is active; bookings are paid in cash or by InstaPay and confirmed by staff.
 - Real screenshots replace the illustrated cover: the website home (cover), a trip page and the
   trip list, and three screens of the app (guest view of its web build). Live link: the website;
-  the app is linked in the text. The admin portal is not linked (Mohamed's decision) and has no
-  screenshots yet because it is behind sign-in.
+  the app is linked in the text. The admin portal is not linked (Mohamed's decision).
+- Admin portal screenshots (2026-11-12): Mohamed signed in himself in a Chrome window the capture
+  script opened; the script only opened pages and saved screenshots. Four are in the gallery
+  (trip catalog, one trip, analytics screen flow, analytics demand). Screens with personal data
+  (customers, bookings, staff, partner contacts, AI insights) were left out, and an internal
+  configuration warning banner was cut out of the two dashboard screens.
 - Verified (desktop and phone): the page renders with no console errors or broken images; no link
   to the admin portal in the built HTML. Initial home JS 199.0 KB gz. Lighthouse (mobile, busy
   machine): home 95 / 84 / 87, Shadia page 94 / 68 / 88 / 94; A11y/BP/SEO 100. No code changed.
